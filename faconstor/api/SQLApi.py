@@ -1309,7 +1309,7 @@ def remove_duplicate_for_status(dict_list):
 
 if __name__ == '__main__':
     credit = {
-        "host": "10.1.5.160\COMMVAULT",
+        "host": "192.168.100.149\COMMVAULT",
         "user": "sa_cloud",
         "password": "1qaz@WSX",
         "database": "CommServ",
@@ -1330,12 +1330,12 @@ if __name__ == '__main__':
     dm = CustomFilter(credit)
     # print(dm.connection)
     # ret = dm.get_all_install_clients()
-    ret = dm.get_oracle_backup_job_list("jxxd")
+    ret = dm.get_installed_sub_clients_for_status("win-2qls3b7jx3v.hzx")
     print(ret)
-    for i in ret:
-        if i["Level"] == "Full":
-            print(i)
-            break
+    # for i in ret:
+    #     if i["Level"] == "Full":
+    #         print(i)
+    #         break
     #     return ret
     # print(ret)
     # # 并发

@@ -14,7 +14,8 @@ $(document).ready(function () {
         "columnDefs": [{
             "targets": 0,
             "mRender": function (data, type, full) {
-                return "<a id='edit' data-toggle='modal' data-target='#static1'>" + data + "</a><input type='text' value='" + full.data_path + "' hidden>" + "<input type='text' value='" + full.copy_priority + "' hidden>" + "<input type='text' value='" + full.target_client + "' hidden>"
+                // return "<a id='edit' data-toggle='modal' data-target='#static1'>" + data + "</a><input type='text' value='" + full.data_path + "' hidden>" + "<input type='text' value='" + full.copy_priority + "' hidden>" + "<input type='text' value='" + full.target_client + "' hidden>"
+                return "<a id='edit'  data-toggle='modal'  data-target='#mn_rcv_modal'>" + data + "</a>"
             }
         }],
         "oLanguage": {
@@ -35,27 +36,39 @@ $(document).ready(function () {
         }
     });
 
-    $('#static1').on('show.bs.modal', function (e) {
+
+    $('#mn_rcv_modal').on('show.bs.modal', function (e) {
+        // 模态框点击位置
         var el = e.relatedTarget;
         var jQuery_el = $(el);
+
+        // tab_init
+        $('#agent_type_tab a:first').tab('show');
+
+        // 相同字段：源客户端、目标客户端下拉
+        $('#oracle_source_client').val(el.innerText);
+
+
         var agent = jQuery_el.parent().next().html();
-        var data_path = jQuery_el.next().val();
-        var copy_priority = jQuery_el.next().next().val();
-        var target_client = jQuery_el.next().next().next().val();
+        // var data_path = jQuery_el.next().val();
+        // var copy_priority = jQuery_el.next().next().val();
+        // var target_client = jQuery_el.next().next().next().val();
 
         $("#agent").val(agent);
-        $("#data_path").val(data_path);
-        $("#copy_priority").val(copy_priority);
-        $("#destClient").val(target_client);
-        $("#sourceClient").val(el.innerText);
-        var datatable = $("#backup_point").dataTable();
-        datatable.fnClearTable(); //清空数据
-        datatable.fnDestroy();
-        $('#backup_point').dataTable({
+        // $("#data_path").val(data_path);
+        // $("#copy_priority").val(copy_priority);
+        // $("#destClient").val(target_client);
+        // $("#sourceClient").val(el.innerText);
+
+        // Oracle
+        var oracleDatatable = $("#oracle_backup_point").dataTable();
+        oracleDatatable.fnClearTable(); //清空数据
+        oracleDatatable.fnDestroy();
+        $('#oracle_backup_point').dataTable({
             "bAutoWidth": true,
             "bProcessing": true,
             "bSort": false,
-            "ajax": "../../oraclerecoverydata?clientName=" + $('#sourceClient').val(),
+            "ajax": "../../oraclerecoverydata?clientName=" + $('#oracle_source_client').val(),
             "columns": [
                 {"data": "jobId"},
                 {"data": "jobType"},
@@ -87,22 +100,23 @@ $(document).ready(function () {
 
             }
         });
-        $('#backup_point tbody').on('click', 'button#select', function () {
-            var table = $('#backup_point').DataTable();
-            var data = table.row($(this).parents('tr')).data();
-            $("#datetimepicker").val(data.LastTime);
-            $("input[name='optionsRadios'][value='1']").prop("checked", false);
-            $("input[name='optionsRadios'][value='2']").prop("checked", true);
-            $("#browseJobId").val(data.jobId);
 
+        $('#oracle_backup_point tbody').on('click', 'button#select', function () {
+            var table = $('#oracle_backup_point').DataTable();
+            var data = table.row($(this).parents('tr')).data();
+            $("#oracle_datetimepicker").val(data.LastTime);
+            $("input[name='oracle_radios'][value='1']").prop("checked", false);
+            $("input[name='oracle_radios'][value='2']").prop("checked", true);
+            $("#oracle_browseJobId").val(data.jobId);
         });
 
-        $("#recovery_time_redio_group").click(function () {
-            if ($("input[name='optionsRadios']:checked").val() == 1) {
-                $("#datetimepicker").val("");
+        $("#oracle_recovery_time_redio_group").click(function () {
+            if ($("input[name='oracle_radios']:checked").val() == 1) {
+                $("#oracle_datetimepicker").val("");
             }
         });
     });
+
 
     $('#datetimepicker').datetimepicker({
         format: 'yyyy-mm-dd hh:ii:ss',
@@ -116,7 +130,7 @@ $(document).ready(function () {
                 alert("请选择目标客户端。");
             else {
                 var myrestoreTime = "";
-                if ($("input[name='optionsRadios']:checked").val() == "2" && $('#datetimepicker').val() != ""){
+                if ($("input[name='optionsRadios']:checked").val() == "2" && $('#datetimepicker').val() != "") {
                     myrestoreTime = $('#datetimepicker').val();
                 }
                 $.ajax({

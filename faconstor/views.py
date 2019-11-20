@@ -7096,10 +7096,10 @@ def get_schedule_policy(request):
 def manualrecovery(request, funid):
     if request.user.is_authenticated():
         result = []
-        all_targets = Target.objects.exclude(state="9")
+        all_origins = Origin.objects.exclude(state="9")
         return render(request, 'manualrecovery.html',
                       {'username': request.user.userinfo.fullname, "manualrecoverypage": True,
-                       "pagefuns": getpagefuns(funid, request=request), "all_targets": all_targets})
+                       "pagefuns": getpagefuns(funid, request=request), "all_origins": all_origins})
     else:
         return HttpResponseRedirect("/login")
 
@@ -7107,6 +7107,7 @@ def manualrecovery(request, funid):
 def manualrecoverydata(request):
     if request.user.is_authenticated():
         result = []
+        print(11111)
         all_origins = Origin.objects.exclude(state="9").select_related("target")
         for origin in all_origins:
             result.append({
