@@ -855,12 +855,69 @@ class CVApi(DataMonitor):
 
     def get_sqlserver_backup_job_list(self, client_name):
 
+        sqlserver_backup_job_sql = """SELECT [jobid],[clientname],[idataagent],[instance],[backupset],[subclient],[data_sp],[backuplevel],[incrlevel],[jobstatus],[jobfailedreason],[startdate],[enddate],[totalBackupSize]
+                    FROM [commserv].[dbo].[CommCellBackupInfo]
+                    WHERE [jobstatus]='Success' AND [clientname]='{0}' AND [idataagent]='SQL Server'
+                    ORDER BY [startdate] DESC""".format(client_name)
+        content = self.fetch_all(sqlserver_backup_job_sql)
         sqlserver_backuplist = []
+        for i in content:
+            start_time = "{:%Y-%m-%d %H:%M:%S}".format(i[11].replace(tzinfo=datetime.timezone.utc).astimezone(
+                datetime.timezone(datetime.timedelta(hours=8)))) if i[11] else ""
+            last_time = "{:%Y-%m-%d %H:%M:%S}".format(i[12].replace(tzinfo=datetime.timezone.utc).astimezone(
+                datetime.timezone(datetime.timedelta(hours=8)))) if i[12] else ""
+
+            sqlserver_backuplist.append({
+                "jobId": i[0],
+                "jobType": "Backup",
+                "clientname": i[1],
+                "idataagent": i[2],
+                "instance": i[3],
+                "backupset": i[4],
+                "subclient": i[5],
+                "data_sp": i[6],
+                "Level": i[7],
+                "incrlevel": i[8],
+                "jobstatus": i[9],
+                "jobfailedreason": i[10],
+                "StartTime": start_time,
+                "LastTime": last_time,
+                "totalBackupSize": i[13],
+            })
 
         return sqlserver_backuplist
 
+    def get_file_system_backup_job_list(self, client_name):
+        file_system_backup_job_sql = """SELECT [jobid],[clientname],[idataagent],[instance],[backupset],[subclient],[data_sp],[backuplevel],[incrlevel],[jobstatus],[jobfailedreason],[startdate],[enddate],[totalBackupSize]
+                    FROM [commserv].[dbo].[CommCellBackupInfo]
+                    WHERE [jobstatus]='Success' AND [clientname]='{0}' AND [idataagent] LIKE '%File System'
+                    ORDER BY [startdate] DESC""".format(client_name)
+        content = self.fetch_all(file_system_backup_job_sql)
+        file_system_backuplist = []
+        for i in content:
+            start_time = "{:%Y-%m-%d %H:%M:%S}".format(i[11].replace(tzinfo=datetime.timezone.utc).astimezone(
+                datetime.timezone(datetime.timedelta(hours=8)))) if i[11] else ""
+            last_time = "{:%Y-%m-%d %H:%M:%S}".format(i[12].replace(tzinfo=datetime.timezone.utc).astimezone(
+                datetime.timezone(datetime.timedelta(hours=8)))) if i[12] else ""
 
-
+            file_system_backuplist.append({
+                "jobId": i[0],
+                "jobType": "Backup",
+                "clientname": i[1],
+                "idataagent": i[2],
+                "instance": i[3],
+                "backupset": i[4],
+                "subclient": i[5],
+                "data_sp": i[6],
+                "Level": i[7],
+                "incrlevel": i[8],
+                "jobstatus": i[9],
+                "jobfailedreason": i[10],
+                "StartTime": start_time,
+                "LastTime": last_time,
+                "totalBackupSize": i[13],
+            })
+        return file_system_backuplist
 
 
 
@@ -1342,7 +1399,8 @@ if __name__ == '__main__':
     dm = CustomFilter(credit)
     # print(dm.connection)
     # ret = dm.get_all_install_clients()
-    ret = dm.get_installed_sub_clients_for_status("win-2qls3b7jx3v.hzx")
+    # ret = dm.get_installed_sub_clients_for_status("win-2qls3b7jx3v.hzx")
+    ret = dm.get_file_system_backup_job_list("win-2qls3b7jx3v.hzx")
     print(ret)
     # for i in ret:
     #     if i["Level"] == "Full":

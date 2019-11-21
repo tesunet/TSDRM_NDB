@@ -5,9 +5,9 @@ $(document).ready(function () {
         "bProcessing": true,
         "ajax": "../manualrecoverydata/",
         "columns": [
-            {"data": "client_name"},
-            {"data": "model"},
-            {"data": "client_os"},
+            { "data": "client_name" },
+            { "data": "model" },
+            { "data": "client_os" },
 
         ],
 
@@ -48,6 +48,7 @@ $(document).ready(function () {
         // 相同字段：源客户端、目标客户端下拉
         $('#oracle_source_client').val(el.innerText);
         $('#file_system_source_client').val(el.innerText);
+        $('#sqlserver_source_client').val(el.innerText);
 
 
         var agent = jQuery_el.parent().next().html();
@@ -59,13 +60,13 @@ $(document).ready(function () {
                 enable: true,
                 url: '../../getfiletree/',
                 autoParam: ["id"],
-                otherParam: {"clientName": $('#file_system_source_client').val()},
+                otherParam: { "clientName": $('#file_system_source_client').val() },
                 dataFilter: filter
             },
             check: {
                 enable: true,
                 chkStyle: "checkbox",               //多选
-                chkboxType: {"Y": "s", "N": "ps"}  //不级联父节点选择
+                chkboxType: { "Y": "s", "N": "ps" }  //不级联父节点选择
             },
             view: {
                 showLine: false
@@ -94,12 +95,12 @@ $(document).ready(function () {
             "bSort": false,
             "ajax": "../../oraclerecoverydata?clientName=" + $('#oracle_source_client').val(),
             "columns": [
-                {"data": "jobId"},
-                {"data": "jobType"},
-                {"data": "Level"},
-                {"data": "StartTime"},
-                {"data": "LastTime"},
-                {"data": null},
+                { "data": "jobId" },
+                { "data": "jobType" },
+                { "data": "Level" },
+                { "data": "StartTime" },
+                { "data": "LastTime" },
+                { "data": null },
             ],
             "columnDefs": [{
                 "targets": -1,
@@ -134,14 +135,6 @@ $(document).ready(function () {
             $("input[name='oracle_radios'][value='1']").prop("checked", false);
             $("input[name='oracle_radios'][value='2']").prop("checked", true);
             $("#oracle_browseJobId").val(data.jobId);
-
-            // file_system
-            $("#file_system_datetimepicker").val(data.LastTime);
-            $("input[name='file_system_radios'][value='1']").prop("checked", false);
-            $("input[name='file_system_radios'][value='2']").prop("checked", true);
-            $("#file_system_browseJobId").val(data.jobId);
-
-
         });
 
         $("#oracle_recovery_time_redio_group").click(function () {
@@ -150,9 +143,120 @@ $(document).ready(function () {
             }
         });
 
+        // file_system
+        var fileSystemDatatable = $("#file_system_backup_point").dataTable();
+        fileSystemDatatable.fnClearTable(); //清空数据
+        fileSystemDatatable.fnDestroy();
+        $('#file_system_backup_point').dataTable({
+            "bAutoWidth": true,
+            "bProcessing": true,
+            "bSort": false,
+            "ajax": "../../filesystemrecoverydata?clientName=" + $('#file_system_source_client').val(),
+            "columns": [
+                { "data": "jobId" },
+                { "data": "jobType" },
+                { "data": "Level" },
+                { "data": "StartTime" },
+                { "data": "LastTime" },
+                { "data": null },
+            ],
+            "columnDefs": [{
+                "targets": -1,
+                "data": null,
+                "defaultContent": "<button  id='select' title='选择'  class='btn btn-xs btn-primary' type='button'><i class='fa fa-check'></i></button>"
+            }],
+
+            "oLanguage": {
+                "sLengthMenu": "&nbsp;&nbsp;每页显示 _MENU_ 条记录",
+                "sZeroRecords": "抱歉， 没有找到",
+                "sInfo": "从 _START_ 到 _END_ /共 _TOTAL_ 条数据",
+                "sInfoEmpty": '',
+                "sInfoFiltered": "(从 _MAX_ 条数据中检索)",
+                "sSearch": "搜索",
+                "oPaginate": {
+                    "sFirst": "首页",
+                    "sPrevious": "前一页",
+                    "sNext": "后一页",
+                    "sLast": "尾页"
+                },
+                "sZeroRecords": "没有检索到数据",
+
+            }
+        });
+
+        $('#file_system_backup_point tbody').on('click', 'button#select', function () {
+            var table = $('#file_system_backup_point').DataTable();
+            var data = table.row($(this).parents('tr')).data();
+
+            // file_system
+            $("#file_system_datetimepicker").val(data.LastTime);
+            $("input[name='file_system_radios'][value='1']").prop("checked", false);
+            $("input[name='file_system_radios'][value='2']").prop("checked", true);
+            $("#file_system_browseJobId").val(data.jobId);
+        });
+
         $("#file_system_recovery_time_redio_group").click(function () {
             if ($("input[name='file_system_radios']:checked").val() == 1) {
                 $("#file_system_datetimepicker").val("");
+            }
+        });
+
+
+        // sqlserver
+        var sqlserverDatatable = $("#sqlserver_backup_point").dataTable();
+        sqlserverDatatable.fnClearTable(); //清空数据
+        sqlserverDatatable.fnDestroy();
+        $('#sqlserver_backup_point').dataTable({
+            "bAutoWidth": true,
+            "bProcessing": true,
+            "bSort": false,
+            "ajax": "../../sqlserverrecoverydata?clientName=" + $('#sqlserver_source_client').val(),
+            "columns": [
+                { "data": "jobId" },
+                { "data": "jobType" },
+                { "data": "Level" },
+                { "data": "StartTime" },
+                { "data": "LastTime" },
+                { "data": null },
+            ],
+            "columnDefs": [{
+                "targets": -1,
+                "data": null,
+                "defaultContent": "<button  id='select' title='选择'  class='btn btn-xs btn-primary' type='button'><i class='fa fa-check'></i></button>"
+            }],
+
+            "oLanguage": {
+                "sLengthMenu": "&nbsp;&nbsp;每页显示 _MENU_ 条记录",
+                "sZeroRecords": "抱歉， 没有找到",
+                "sInfo": "从 _START_ 到 _END_ /共 _TOTAL_ 条数据",
+                "sInfoEmpty": '',
+                "sInfoFiltered": "(从 _MAX_ 条数据中检索)",
+                "sSearch": "搜索",
+                "oPaginate": {
+                    "sFirst": "首页",
+                    "sPrevious": "前一页",
+                    "sNext": "后一页",
+                    "sLast": "尾页"
+                },
+                "sZeroRecords": "没有检索到数据",
+
+            }
+        });
+
+        $('#sqlserver_backup_point tbody').on('click', 'button#select', function () {
+            var table = $('#sqlserver_backup_point').DataTable();
+            var data = table.row($(this).parents('tr')).data();
+
+            // file_system
+            $("#sqlserver_datetimepicker").val(data.LastTime);
+            $("input[name='sqlserver_radios'][value='1']").prop("checked", false);
+            $("input[name='sqlserver_radios'][value='2']").prop("checked", true);
+            $("#sqlserver_browseJobId").val(data.jobId);
+        });
+
+        $("#sqlserver_recovery_time_redio_group").click(function () {
+            if ($("input[name='sqlserver_radios']:checked").val() == 1) {
+                $("#sqlserver_datetimepicker").val("");
             }
         });
     });

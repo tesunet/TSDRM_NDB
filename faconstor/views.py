@@ -7188,10 +7188,33 @@ def oraclerecoverydata(request):
         return HttpResponseRedirect("/login")
 
 
+def sqlserverrecoverydata(request):
+    if request.user.is_authenticated():
+        client_name = request.GET.get('clientName', '')
+        result = []
+
+        dm = SQLApi.CustomFilter(settings.sql_credit)
+        result = dm.get_sqlserver_backup_job_list(client_name)
+        return JsonResponse({"data": result})
+    else:
+        return HttpResponseRedirect("/login")
+
+
+def filesystemrecoverydata(request):
+    if request.user.is_authenticated():
+        client_name = request.GET.get('clientName', '')
+        result = []
+
+        dm = SQLApi.CustomFilter(settings.sql_credit)
+        result = dm.get_file_system_backup_job_list(client_name)
+        return JsonResponse({"data": result})
+    else:
+        return HttpResponseRedirect("/login")
+
+
 def getfiletree(request):
     id = request.POST.get('id', '')
     client_name = request.POST.get('clientName', '')
-    print(request.POST)
     allhost = Origin.objects.exclude(state="9").filter(client_name=client_name)
     treedata = []
     if len(allhost) > 0:

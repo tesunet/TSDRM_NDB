@@ -163,6 +163,11 @@ urlpatterns = [
     url(r'^dooraclerecovery/$', dooraclerecovery),
     url(r'^oraclerecoverydata/$', oraclerecoverydata),
 
+    url(r'^sqlserverrecoverydata/$', sqlserverrecoverydata),
+
+    url(r'^filesystemrecoverydata/$', filesystemrecoverydata),
+
+
     # 演练概况
     url(r'^get_process_run_facts/$', get_process_run_facts),
 
