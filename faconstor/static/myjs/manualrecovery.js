@@ -47,18 +47,42 @@ $(document).ready(function () {
 
         // 相同字段：源客户端、目标客户端下拉
         $('#oracle_source_client').val(el.innerText);
+        $('#file_system_source_client').val(el.innerText);
 
 
         var agent = jQuery_el.parent().next().html();
-        // var data_path = jQuery_el.next().val();
-        // var copy_priority = jQuery_el.next().next().val();
-        // var target_client = jQuery_el.next().next().next().val();
-
         $("#agent").val(agent);
-        // $("#data_path").val(data_path);
-        // $("#copy_priority").val(copy_priority);
-        // $("#destClient").val(target_client);
-        // $("#sourceClient").val(el.innerText);
+
+        // 加载file_system_tree
+        var setting = {
+            async: {
+                enable: true,
+                url: '../../getfiletree/',
+                autoParam: ["id"],
+                otherParam: {"clientName": $('#file_system_source_client').val()},
+                dataFilter: filter
+            },
+            check: {
+                enable: true,
+                chkStyle: "checkbox",               //多选
+                chkboxType: {"Y": "s", "N": "ps"}  //不级联父节点选择
+            },
+            view: {
+                showLine: false
+            },
+
+        };
+
+        function filter(treeId, parentNode, childNodes) {
+            if (!childNodes) return null;
+            for (var i = 0, l = childNodes.length; i < l; i++) {
+                childNodes[i].name = childNodes[i].name.replace(/\.n/g, '.');
+            }
+            return childNodes;
+        }
+
+        $.fn.zTree.init($("#file_system_tree"), setting);
+
 
         // Oracle
         var oracleDatatable = $("#oracle_backup_point").dataTable();
@@ -104,15 +128,31 @@ $(document).ready(function () {
         $('#oracle_backup_point tbody').on('click', 'button#select', function () {
             var table = $('#oracle_backup_point').DataTable();
             var data = table.row($(this).parents('tr')).data();
+
+            // oracle
             $("#oracle_datetimepicker").val(data.LastTime);
             $("input[name='oracle_radios'][value='1']").prop("checked", false);
             $("input[name='oracle_radios'][value='2']").prop("checked", true);
             $("#oracle_browseJobId").val(data.jobId);
+
+            // file_system
+            $("#file_system_datetimepicker").val(data.LastTime);
+            $("input[name='file_system_radios'][value='1']").prop("checked", false);
+            $("input[name='file_system_radios'][value='2']").prop("checked", true);
+            $("#file_system_browseJobId").val(data.jobId);
+
+
         });
 
         $("#oracle_recovery_time_redio_group").click(function () {
             if ($("input[name='oracle_radios']:checked").val() == 1) {
                 $("#oracle_datetimepicker").val("");
+            }
+        });
+
+        $("#file_system_recovery_time_redio_group").click(function () {
+            if ($("input[name='file_system_radios']:checked").val() == 1) {
+                $("#file_system_datetimepicker").val("");
             }
         });
     });
@@ -157,4 +197,19 @@ $(document).ready(function () {
             }
         }
     });
+
+    $('#selectpath').click(function () {
+        $('#fs_se_1').empty();
+        var treeObj = $.fn.zTree.getZTreeObj("file_system_tree");
+        var nodes = treeObj.getCheckedNodes(true);
+        for (var k = 0, length = nodes.length; k < length; k++) {
+            var halfCheck = nodes[k].getCheckStatus();
+            if (!halfCheck.half) {
+                $("#fs_se_1").append("<option value='\\" + nodes[k].id + "\\'>\\" + nodes[k].id + "\\</option>");
+            }
+        }
+        if (nodes.length == 0)
+            $("#fs_se_1").append("<option value='\\'>\\</option>");
+    })
+
 });

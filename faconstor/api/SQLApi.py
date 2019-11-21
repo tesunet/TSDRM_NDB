@@ -852,6 +852,18 @@ class CVApi(DataMonitor):
             })
         return oracle_backuplist
 
+
+    def get_sqlserver_backup_job_list(self, client_name):
+
+        sqlserver_backuplist = []
+
+        return sqlserver_backuplist
+
+
+
+
+
+
     def get_job_controller(self):
         job_controller_sql = """SELECT [jobID],[operation],[clientComputer],[agentType],[subclient]
                                 ,[jobType],[phase],[storagePolicy],[mediaAgent],[status],[progress],[errors],[delayReason],[description]

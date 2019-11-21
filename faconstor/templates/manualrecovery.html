@@ -194,7 +194,8 @@
                                         <div class="form-group">
                                             <label class="col-lg-2 control-label">目标客户端</label>
                                             <div class="col-md-10">
-                                                <select class="form-control" id="oracle_dest_client" name="oracle_dest_client">
+                                                <select class="form-control" id="oracle_dest_client"
+                                                        name="oracle_dest_client">
                                                     {% for origin in all_origins %}
                                                     <option selected value="{{ origin.client_name }}">
                                                         {{origin.client_name}}
@@ -219,7 +220,8 @@
                                         <div class="form-group">
                                             <label class="col-lg-2 control-label">数据重定向路径</label>
                                             <div class="col-lg-10">
-                                                <input id="oracle_data_path" autocomplete="off" type="text" name="oracle_data_path"
+                                                <input id="oracle_data_path" autocomplete="off" type="text"
+                                                       name="oracle_data_path"
                                                        class="form-control">
                                             </div>
                                         </div>
@@ -239,7 +241,8 @@
                                         </div>
                                         <div class="form-group">
                                             <div class="col-lg-offset-6 col-lg-6" style="padding-top:20px">
-                                                <button type="button" id="oracle_recovery" name="oracle_recovery" class="btn green">恢复
+                                                <button type="button" id="oracle_recovery" name="oracle_recovery"
+                                                        class="btn green">恢复
                                                 </button>
                                             </div>
                                         </div>
@@ -379,25 +382,27 @@
                                 </header>
                                 <div class="panel-body">
                                     <form class="bs-example form-horizontal">
-                                        <input type="text" id="agent" name="agent" hidden>
-                                        <input type="text" id="browseJobId" name="browseJobId" hidden>
+                                        <input type="text" id="file_system_agent" name="file_system_agent" hidden>
+                                        <input type="text" id="file_system_browseJobId" name="file_system_browseJobId"
+                                               hidden>
 
                                         <div class="form-group">
                                             <label class="col-lg-2 control-label">源客户端</label>
                                             <div class="col-lg-10">
-                                                <input readonly id="sourceClient" autocomplete="off" type="text"
-                                                       name="sourceClient"
+                                                <input readonly id="file_system_source_client" autocomplete="off"
+                                                       type="text"
+                                                       name="file_system_source_client"
                                                        class="form-control" value="">
                                             </div>
                                         </div>
                                         <div class="form-group">
                                             <label class="col-lg-2 control-label">目标客户端</label>
                                             <div class="col-md-10">
-                                                <select class="form-control" id="destClient" name="destClient">
-                                                    {% for target in all_targets %}
-                                                    <option selected value="{{ target.client_name }}">{{
-                                                        target.client_name
-                                                        }}
+                                                <select class="form-control" id="file_system_dest_client"
+                                                        name="file_system_dest_client">
+                                                    {% for origin in all_origins %}
+                                                    <option selected value="{{ origin.client_name }}">
+                                                        {{origin.client_name}}
                                                     </option>
                                                     {% endfor %}
                                                 </select>
@@ -406,40 +411,59 @@
                                         <div class="form-group  ">
                                             <label class="col-md-2 control-label">恢复时间点</label>
                                             <div class="col-md-10">
-                                                <div class="input-group" id="recovery_time_redio_group">
-                                        <span class="input-group-addon">
-                                            <input type="radio" name="optionsRadios" value="1" checked> 最新时间点
-                                            <input type="radio" name="optionsRadios" value="2">选择时间
-                                        </span>
-                                                    <input id="datetimepicker" autocomplete="off" type="datetime"
-                                                           name="optionsRadios" class="form-control">
+                                                <div class="input-group" id="file_system_recovery_time_redio_group">
+                                                <span class="input-group-addon">
+                                                    <input type="radio" name="file_system_radio" value="1" checked> 最新时间点
+                                                    <input type="radio" name="file_system_radio" value="2">选择时间
+                                                </span>
+                                                    <input id="file_system_datetimepicker" autocomplete="off"
+                                                           type="datetime"
+                                                           name="file_system_datetimepicker" class="form-control">
                                                 </div>
                                             </div>
                                         </div>
-                                        <div class="form-group">
-                                            <label class="col-lg-2 control-label">数据重定向路径</label>
-                                            <div class="col-lg-10">
-                                                <input id="data_path" autocomplete="off" type="text" name="data_path"
-                                                       class="form-control">
+                                        <div class="form-group   ">
+                                            <label class="col-md-2 control-label">文件改写</label>
+                                            <div class="col-md-10" style="padding-top:6px">
+                                                <div class="input-group">
+                                                <span>
+                                                    <input type="radio" name="overwrite" value="FALSE" checked> 如果介质上文件较新则改写
+                                                    <input type="radio" name="overwrite" value="TRUE">无条件改写
+                                                </span>
+                                                </div>
                                             </div>
                                         </div>
-                                        <div class="form-body">
-                                            <div class="form-group">
-                                                <label class="col-md-2 control-label"><span
-                                                        style="color:red; "></span>选择拷贝优先级</label>
-                                                <div class="col-md-10">
-                                                    <select name="copy_priority" id="copy_priority"
-                                                            class="form-control">
-                                                        <option value="1">主拷贝</option>
-                                                        <option value="2">辅助拷贝</option>
-                                                    </select>
-                                                    <div class="form-control-focus"></div>
+                                        <div class="form-group  ">
+                                            <label class="col-md-2 control-label">恢复到</label>
+                                            <div class="col-md-10">
+                                                <div class="input-group">
+                                                    <span class="input-group-addon">
+                                                        <input type="radio" name="path" value="1" checked> 相同文件夹
+                                                        <input type="radio" name="path" value="2">指定路径
+                                                    </span>
+                                                    <input id="mypath" autocomplete="off" type="path" name="path"
+                                                           class="form-control">
                                                 </div>
+                                            </div>
+                                        </div>
+                                        <div class="form-group  " style="padding-top:20px">
+                                            <label class="col-md-2 control-label">恢复目录</label>
+                                            <div class="col-md-10">
+                                                <select multiple="multiple" id="fs_se_1" size="10" class="form-control"
+                                                        style="overflow-y:auto;">
+                                                    <option value='\'>\</option>
+                                                </select>
                                             </div>
                                         </div>
                                         <div class="form-group">
                                             <div class="col-lg-offset-6 col-lg-6" style="padding-top:20px">
-                                                <button type="button" id="recovery" name="recovery" class="btn green">恢复
+                                                <button type="button" data-toggle="modal"
+                                                        data-target="#select_path_modal"
+                                                        id="selectfile" name="selectfile" class="btn green uppercase">
+                                                    选择目录
+                                                </button>
+                                                <button type="button" id="file_system_recovery"
+                                                        name="file_system_recovery" class="btn green">恢复
                                                 </button>
                                             </div>
                                         </div>
@@ -450,6 +474,31 @@
                         </div>
                     </div>
                 </div>
+            </div>
+        </div>
+    </div>
+</div>
+<div id="select_path_modal" class="modal fade" tabindex="-1" data-backdrop="static" data-keyboard="false">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true"></button>
+                <h4 class="modal-title">选择目录</h4>
+            </div>
+            <div style="height:400px;overflow:auto; ">
+                <div>
+                    <ul id="file_system_tree" class="ztree "></ul>
+                </div>
+
+                <p>
+                <p>
+                <p>
+            </div>
+            <div class="modal-footer">
+                <button id="selectpath" type="button" data-dismiss="modal"
+                        class="btn green uppercase">确定
+                </button>
+
             </div>
         </div>
     </div>
@@ -490,5 +539,18 @@
       rel="stylesheet" type="text/css"/>
 <script src="/static/assets/global/plugins/bootstrap-datetimepicker/js/bootstrap-datetimepicker.js"
         type="text/javascript"></script>
+
+
+<!-- jsTree -->
+<script src="/static/assets/global/plugins/jstree/dist/jstree.min.js" type="text/javascript"></script>
+
+<!-- zTree -->
+<link href="/static/assets/global/plugins/jstree/dist/themes/default/style.min.css" rel="stylesheet"
+      type="text/css"/>
+<link href="/static/assets/global/plugins/ztree/css/zTreeStyle/zTreeStyle.css" rel="stylesheet"
+      type="text/css"/>
+
+<script src="/static/assets/global/plugins/ztree/js/jquery.ztree.core.js" type="text/javascript"></script>
+<script src="/static/assets/global/plugins/ztree/js/jquery.ztree.excheck.js" type="text/javascript"></script>
 
 {% endblock %}

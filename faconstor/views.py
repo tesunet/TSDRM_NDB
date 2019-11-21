@@ -7107,7 +7107,6 @@ def manualrecovery(request, funid):
 def manualrecoverydata(request):
     if request.user.is_authenticated():
         result = []
-        print(11111)
         all_origins = Origin.objects.exclude(state="9").select_related("target")
         for origin in all_origins:
             result.append({
@@ -7187,6 +7186,34 @@ def oraclerecoverydata(request):
         return JsonResponse({"data": result})
     else:
         return HttpResponseRedirect("/login")
+
+
+def getfiletree(request):
+    id = request.POST.get('id', '')
+    client_name = request.POST.get('clientName', '')
+    print(request.POST)
+    allhost = Origin.objects.exclude(state="9").filter(client_name=client_name)
+    treedata = []
+    if len(allhost) > 0:
+        clientID = int(allhost[0].client_id)
+        cvToken = CV_RestApi_Token()
+        cvToken.login(settings.CVApi_credit)
+        cvAPI = CV_API(cvToken)
+        list = cvAPI.browse(clientID, "File System", None, id, False)
+        print(list)
+        for node in list:
+            root = {}
+            root["id"] = node["path"]
+            root["pId"] = id
+            root["name"] = node["path"]
+            if node["DorF"] == "D":
+                root["isParent"] = True
+            else:
+                root["isParent"] = False
+            treedata.append(root)
+        treedata = json.dumps(treedata)
+
+    return HttpResponse(treedata)
 
 
 def process_schedule(request, funid):

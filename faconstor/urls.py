@@ -111,6 +111,8 @@ urlpatterns = [
 
     url(r'^get_force_script_info/$', get_force_script_info),
 
+    # file_system
+    url(r'^getfiletree/$', getfiletree),
 
     # 历史查询
     url(r'^custom_pdf_report/$', custom_pdf_report),
