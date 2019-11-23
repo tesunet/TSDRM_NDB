@@ -133,8 +133,8 @@
                 <div class="portlet light bordered tabbable-line" style="margin-bottom: 0px;">
                     <ul class="nav nav-tabs" id="agent_type_tab">
                         <li>
-                            <a href="#tab_oracle" data-toggle="tab" style="vertical-align: inherit;">
-                                <b>Oracle</b>
+                            <a href="#tab_active_directory" data-toggle="tab" style="vertical-align: inherit;">
+                                <b>Active Directory</b>
                             </a>
                         </li>
                         <li>
@@ -150,7 +150,7 @@
                     </ul>
                     <div class="tab-content" style="padding: 0 0;">
                         <!-- Oracle -->
-                        <div class="tab-pane" id="tab_oracle">
+                        <div class="tab-pane" id="tab_active_directory">
                             <section class="panel panel-default">
                                 <header class="panel-heading">
                                     备份列表
@@ -158,7 +158,7 @@
                                 <div style="height:10px"></div>
                                 <table
                                     class="table table-striped table-bordered table-hover table-checkable order-column"
-                                    id="oracle_backup_point">
+                                    id="active_directory_backup_point">
                                     <thead>
                                         <tr>
                                             <th> 任务ID</th>
@@ -181,24 +181,24 @@
                                 </header>
                                 <div class="panel-body">
                                     <form class="bs-example form-horizontal">
-                                        <input type="text" id="oracle_agent" name="oracle_agent" hidden>
-                                        <input type="text" id="oracle_browseJobId" name="oracle_browseJobId" hidden>
+                                        <input type="text" id="active_directory_agent" name="active_directory_agent" hidden>
+                                        <input type="text" id="active_directory_browseJobId" name="active_directory_browseJobId" hidden>
 
                                         <div class="form-group">
                                             <label class="col-lg-2 control-label">源客户端</label>
                                             <div class="col-lg-10">
-                                                <input readonly id="oracle_source_client" autocomplete="off" type="text"
-                                                    name="oracle_source_client" class="form-control" value="">
+                                                <input readonly id="active_directory_source_client" autocomplete="off" type="text"
+                                                    name="active_directory_source_client" class="form-control" value="">
                                             </div>
                                         </div>
                                         <div class="form-group">
                                             <label class="col-lg-2 control-label">目标客户端</label>
                                             <div class="col-md-10">
-                                                <select class="form-control" id="oracle_dest_client"
-                                                    name="oracle_dest_client">
-                                                    {% for origin in all_origins %}
-                                                    <option selected value="{{ origin.client_name }}">
-                                                        {{origin.client_name}}
+                                                <select class="form-control" id="active_directory_dest_client"
+                                                    name="active_directory_dest_client">
+                                                    {% for target in all_targets %}
+                                                    <option selected value="{{ target.client_name }}">
+                                                        {{target.client_name}}
                                                     </option>
                                                     {% endfor %}
                                                 </select>
@@ -207,41 +207,20 @@
                                         <div class="form-group  ">
                                             <label class="col-md-2 control-label">恢复时间点</label>
                                             <div class="col-md-10">
-                                                <div class="input-group" id="oracle_recovery_time_redio_group">
+                                                <div class="input-group" id="active_directory_recovery_time_redio_group">
                                                     <span class="input-group-addon">
-                                                        <input type="radio" name="oracle_radios" value="1" checked>
+                                                        <input type="radio" name="active_directory_radios" value="1" checked>
                                                         最新时间点
-                                                        <input type="radio" name="oracle_radios" value="2">选择时间
+                                                        <input type="radio" name="active_directory_radios" value="2">选择时间
                                                     </span>
-                                                    <input id="oracle_datetimepicker" autocomplete="off" type="datetime"
-                                                        name="oracle_datetimepicker" class="form-control">
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <div class="form-group">
-                                            <label class="col-lg-2 control-label">数据重定向路径</label>
-                                            <div class="col-lg-10">
-                                                <input id="oracle_data_path" autocomplete="off" type="text"
-                                                    name="oracle_data_path" class="form-control">
-                                            </div>
-                                        </div>
-                                        <div class="form-body">
-                                            <div class="form-group">
-                                                <label class="col-md-2 control-label"><span
-                                                        style="color:red; "></span>选择拷贝优先级</label>
-                                                <div class="col-md-10">
-                                                    <select name="oracle_copy_priority" id="oracle_copy_priority"
-                                                        class="form-control">
-                                                        <option value="1">主拷贝</option>
-                                                        <option value="2">辅助拷贝</option>
-                                                    </select>
-                                                    <div class="form-control-focus"></div>
+                                                    <input id="active_directory_datetimepicker" autocomplete="off" type="datetime"
+                                                        name="active_directory_datetimepicker" class="form-control">
                                                 </div>
                                             </div>
                                         </div>
                                         <div class="form-group">
                                             <div class="col-lg-offset-6 col-lg-6" style="padding-top:20px">
-                                                <button type="button" id="oracle_recovery" name="oracle_recovery"
+                                                <button type="button" id="active_directory_recovery" name="active_directory_recovery"
                                                     class="btn green">恢复
                                                 </button>
                                             </div>
@@ -297,9 +276,9 @@
                                             <label class="col-lg-2 control-label">目标客户端</label>
                                             <div class="col-md-10">
                                                 <select class="form-control" id="sqlserver_dest_client" name="sqlserver_dest_client">
-                                                    {% for origin in all_origins %}
-                                                    <option selected value="{{ origin.client_name }}">
-                                                        {{origin.client_name}}
+                                                    {% for target in all_targets %}
+                                                    <option selected value="{{ target.client_name }}">
+                                                        {{target.client_name}}
                                                     </option>
                                                     {% endfor %}
                                                 </select>
@@ -386,9 +365,9 @@
                                             <div class="col-md-10">
                                                 <select class="form-control" id="file_system_dest_client"
                                                     name="file_system_dest_client">
-                                                    {% for origin in all_origins %}
-                                                    <option selected value="{{ origin.client_name }}">
-                                                        {{origin.client_name}}
+                                                    {% for target in all_targets %}
+                                                    <option selected value="{{ target.client_name }}">
+                                                        {{target.client_name}}
                                                     </option>
                                                     {% endfor %}
                                                 </select>

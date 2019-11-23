@@ -9,7 +9,6 @@ $(document).ready(function() {
             { "data": "client_id" },
             { "data": "client_name" },
             { "data": "agent" },
-            { "data": "instance" },
             { "data": "os" },
             { "data": "target_client_name" },
             { "data": null }
@@ -69,18 +68,12 @@ $(document).ready(function() {
         $("#origin_id").val(data.id);
         $("#origin").val(data.client_id);
         $("#agent").val(data.agent);
-        $("#instance").val(data.instance);
         $("#target").val(data.target_client);
         $("#os").val(data.os);
-
-        $("#copy_priority").val(data.copy_priority);
-        $("#db_open").val(data.db_open);
-        $("#data_path").val(data.data_path);
     });
-
-    var oracle_data = JSON.parse($("#oracle_data").val());
-    for (var i = 0; i < oracle_data.length; i++) {
-        $("#origin").append('<option value="' + oracle_data[i].clientid + '">' + oracle_data[i].clientname + '</option>');
+    var client_info_data = JSON.parse($("#client_info_list").val());
+    for (var i = 0; i < client_info_data.length; i++) {
+        $("#origin").append('<option value="' + client_info_data[i].clientid + '">' + client_info_data[i].clientname + '</option>');
     }
 
     // 切换
@@ -88,16 +81,15 @@ $(document).ready(function() {
         //..
         var clientid = $(this).val();
 
-        for (var i = 0; i < oracle_data.length; i++) {
-            if (clientid == oracle_data[i].clientid) {
-                $("#agent").val(oracle_data[i].agent);
-                $("#instance").val(oracle_data[i].instance);
-                $("#os").val(oracle_data[i].os);
+        for (var i = 0; i < client_info_data.length; i++) {
+            if (clientid == client_info_data[i].clientid) {
+                $("#agent").val(client_info_data[i].agent);
+                $("#instance").val(client_info_data[i].instance);
+                $("#os").val(client_info_data[i].os);
                 break
             }
         }
     });
-
 
     $("#new").click(function() {
         $("#origin_id").val("0");

@@ -919,7 +919,37 @@ class CVApi(DataMonitor):
             })
         return file_system_backuplist
 
+    def get_active_directory_backup_job_list(self, client_name):
+        active_directory_backup_job_sql = """SELECT [jobid],[clientname],[idataagent],[instance],[backupset],[subclient],[data_sp],[backuplevel],[incrlevel],[jobstatus],[jobfailedreason],[startdate],[enddate],[totalBackupSize]
+                    FROM [commserv].[dbo].[CommCellBackupInfo]
+                    WHERE [jobstatus]='Success' AND [clientname]='{0}' AND [idataagent]='Active Directory'
+                    ORDER BY [startdate] DESC""".format(client_name)
+        content = self.fetch_all(active_directory_backup_job_sql)
+        active_directory_backuplist = []
+        for i in content:
+            start_time = "{:%Y-%m-%d %H:%M:%S}".format(i[11].replace(tzinfo=datetime.timezone.utc).astimezone(
+                datetime.timezone(datetime.timedelta(hours=8)))) if i[11] else ""
+            last_time = "{:%Y-%m-%d %H:%M:%S}".format(i[12].replace(tzinfo=datetime.timezone.utc).astimezone(
+                datetime.timezone(datetime.timedelta(hours=8)))) if i[12] else ""
 
+            active_directory_backuplist.append({
+                "jobId": i[0],
+                "jobType": "Backup",
+                "clientname": i[1],
+                "idataagent": i[2],
+                "instance": i[3],
+                "backupset": i[4],
+                "subclient": i[5],
+                "data_sp": i[6],
+                "Level": i[7],
+                "incrlevel": i[8],
+                "jobstatus": i[9],
+                "jobfailedreason": i[10],
+                "StartTime": start_time,
+                "LastTime": last_time,
+                "totalBackupSize": i[13],
+            })
+        return active_directory_backuplist
 
     def get_job_controller(self):
         job_controller_sql = """SELECT [jobID],[operation],[clientComputer],[agentType],[subclient]
@@ -1398,10 +1428,10 @@ if __name__ == '__main__':
     # def get_info():
     dm = CustomFilter(credit)
     # print(dm.connection)
-    # ret = dm.get_all_install_clients()
+    ret = dm.get_installed_sub_clients_all()
     # ret = dm.get_installed_sub_clients_for_status("win-2qls3b7jx3v.hzx")
-    ret = dm.get_file_system_backup_job_list("win-2qls3b7jx3v.hzx")
-    print(ret)
+    # ret = dm.get_active_directory_backup_job_list("exchangeads")
+    # print(ret)
     # for i in ret:
     #     if i["Level"] == "Full":
     #         print(i)
@@ -1420,7 +1450,7 @@ if __name__ == '__main__':
     # ret = dm.get_installed_sub_clients_for_info()
     # ret = dm.custom_all_backup_content()
     # ret = dm.get_schedules(client="cv-server")
-    # ret, row_dict = dm.custom_all_schedules()
+    # ret, row_dict = dm.custom_all_schedules(["win-2qls3b7jx3v.hzx"])
     # ret, row_dict = dm.custom_all_storages()
     # ret, row_dict = dm.custom_all_backup_content()
     # ret = dm.get_all_backup_content()
@@ -1430,7 +1460,7 @@ if __name__ == '__main__':
     # ret = dm.get_all_schedules()
 
     # ret = dm.get_oracle_backup_job_list("win-2qls3b7jx3v.hzx")
-    # print(ret)
+    print(ret)
     # for i in ret:
     #     print(i)
     # import json

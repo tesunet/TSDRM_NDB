@@ -8,8 +8,6 @@ $(document).ready(function() {
             { "data": "id" },
             { "data": "client_id" },
             { "data": "client_name" },
-            { "data": "agent" },
-            { "data": "instance" },
             { "data": "os" },
             { "data": null }
         ],
@@ -66,43 +64,43 @@ $(document).ready(function() {
         var data = table.row($(this).parents('tr')).data();
         $("#target_id").val(data.id);
         $("#target").val(data.client_id);
-        // $("#client_id").val(data.client_id);
-        $("#agent").val(data.agent);
-        $("#instance").val(data.instance);
         $("#os").val(data.os);
+
+        $("#sqlserver_username").val(data.sqlserver_username);
+        $("#sqlserver_passwd").val(data.sqlserver_passwd);
+        $("#sqlserver_db").val(data.sqlserver_db);
     });
 
     // 加载oracle_data
     // [{"clientname": "myrac1", "instance": "oracle_1", "agent": "Oracle Database", "clientid": 33},
     // {"clientname": "myrac2", "instance": "oracle_2", "agent": "Oracle Database", "clientid": 34},
     // {"clientname": "win-2qls3b7jx3v.hzx", "instance": "ORCL", "agent": "Oracle Database", "clientid": 3}]
-    var oracle_data = JSON.parse($("#oracle_data").val());
-    for (var i = 0; i < oracle_data.length; i++) {
-        $("#target").append('<option value="' + oracle_data[i].clientid + '">' + oracle_data[i].clientname + '</option>');
+    var client_list = JSON.parse($("#client_list").val());
+    for (var i = 0; i < client_list.length; i++) {
+        $("#target").append('<option value="' + client_list[i].clientid + '">' + client_list[i].clientname + '</option>');
     }
 
     // 切换
     $("#target").change(function() {
         //..
         var clientid = $(this).val();
-
-        for (var i = 0; i < oracle_data.length; i++) {
-            if (clientid == oracle_data[i].clientid) {
-                $("#agent").val(oracle_data[i].agent);
-                $("#instance").val(oracle_data[i].instance);
-                $("#os").val(oracle_data[i].os);
+        for (var i = 0; i < client_list.length; i++) {
+            if (clientid == client_list[i].clientid) {
+                $("#os").val(client_list[i].os);
                 break
             }
         }
     });
 
-
     $("#new").click(function() {
         $("#target_id").val("0");
         $("#target").val("");
         $("#agent").val("");
-        $("#instance").val("");
         $("#os").val("");
+
+        $("#sqlserver_username").val("");
+        $("#sqlserver_passwd").val("");
+        $("#sqlserver_db").val("");
     });
 
     $('#save').click(function() {
@@ -115,9 +113,10 @@ $(document).ready(function() {
                 target_id: $("#target_id").val(),
                 client_id: $("#target").val(),
                 client_name: $("#target").find("option:selected").text(),
-                agent: $("#agent").val(),
-                instance: $("#instance").val(),
                 os: $("#os").val(),
+                sqlserver_username: $("#sqlserver_username").val(),
+                sqlserver_passwd: $("#sqlserver_passwd").val(),
+                sqlserver_db: $("#sqlserver_db").val()
             },
             success: function(data) {
                 if (data.ret == 1) {
@@ -130,9 +129,5 @@ $(document).ready(function() {
                 alert("页面出现错误，请于管理员联系。");
             }
         });
-    })
-
-    $('#error').click(function() {
-        $(this).hide()
     })
 });

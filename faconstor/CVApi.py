@@ -3939,6 +3939,144 @@ class CV_Backupset(CV_Client):
             self.msg = "unknown error:" + self.receiveText
         return jobId
 
+    def restoreActiveDirectoryBackupset(self, dest, operator):
+        # param client is clientName or clientId
+        # operator is {"instanceName":, "destClient":, "restoreTime":, "browseJobId":None}
+        # return JobId
+        # or -1 is error
+        jobId = -1
+        instance = self.backupsetInfo["instanceName"]
+        if operator != None:
+            keys = operator.keys()
+            if "restoreTime" not in keys:
+                self.msg = "operator - no restoreTime"
+                return jobId
+        else:
+            self.msg = "param not set"
+            return jobId
+
+        sourceClient = source
+        destClient = dest
+        restoreTime = operator["restoreTime"]
+
+        restoreactivedirectoryXML = '''
+            <databrowse_BrowseRequest>
+            <opType>Browse</opType>
+            <session/>
+            <entity>
+                <backupsetName>defaultBackupSet</backupsetName>
+                <instanceName>{instance}</instanceName>
+                <appName>Active Directory</appName>
+                <clientName>{destClient}</clientName>
+            </entity>
+            <paths>
+                <path>,</path>
+            </paths>
+            <timeRange/>
+            <options>
+                <skipIndexRestore>false</skipIndexRestore>
+                <instantSend>false</instantSend>
+            </options>
+            <mode>
+                <mode>3</mode>
+            </mode>
+            <ma/>
+            <advOptions>
+                <copyPrecedence>0</copyPrecedence>
+                <advConfig>
+                <extendedConfig>
+                    <browseAdvConfigLiveBrowse>
+                    <useISCSIMount>false</useISCSIMount>
+                    </browseAdvConfigLiveBrowse>
+                </extendedConfig>
+                </advConfig>
+            </advOptions>
+            <queries>
+                <type>DATA</type>
+                <queryId>0</queryId>
+                <dataParam>
+                <paging>
+                    <firstNode>0</firstNode>
+                    <skipNode>0</skipNode>
+                    <pageSize>1000</pageSize>
+                </paging>
+                </dataParam>
+            </queries>
+            </databrowse_BrowseRequest>'''.format(destClient=destClient, instance=instance)
+
+        if restoreTime:
+            restoreactivedirectoryXML = '''
+            <databrowse_BrowseRequest>
+            <opType>Browse</opType>
+            <session/>
+            <entity>
+                <backupsetName>defaultBackupSet</backupsetName>
+                <instanceName>{instance}</instanceName>
+                <appName>Active Directory</appName>
+                <clientName>{destClient}</clientName>
+            </entity>
+            <paths>
+                <path>,</path>
+            </paths>
+            <timeRange>
+                <toTime></toTime>
+                <fromTime>{restoreTime}</fromTime>
+            </timeRange>
+            <options>
+                <skipIndexRestore>false</skipIndexRestore>
+                <instantSend>false</instantSend>
+            </options>
+            <mode>
+                <mode>3</mode>
+            </mode>
+            <ma/>
+            <advOptions>
+                <copyPrecedence>0</copyPrecedence>
+                <advConfig>
+                <extendedConfig>
+                    <browseAdvConfigLiveBrowse>
+                    <useISCSIMount>false</useISCSIMount>
+                    </browseAdvConfigLiveBrowse>
+                </extendedConfig>
+                </advConfig>
+            </advOptions>
+            <queries>
+                <type>DATA</type>
+                <queryId>0</queryId>
+                <dataParam>
+                <paging>
+                    <firstNode>0</firstNode>
+                    <skipNode>0</skipNode>
+                    <pageSize>1000</pageSize>
+                </paging>
+                </dataParam>
+            </queries>
+            </databrowse_BrowseRequest>
+            '''.format(destClient=destClient, instance=instance, restoreTime=restoreTime)
+
+        try:
+            root = ET.fromstring(restoreactivedirectoryXML)
+        except:
+            self.msg = "Error:parse xml: " + restoreactivedirectoryXML
+            return jobId
+
+        xmlString = ""
+        xmlString = ET.tostring(root, encoding='utf-8', method='xml')
+        if self.qCmd("QCommand/qoperation execute", xmlString):
+            try:
+                root = ET.fromstring(self.receiveText)
+            except:
+                self.msg = "unknown error" + self.receiveText
+                return jobId
+
+            nodes = root.findall(".//jobIds")
+            for node in nodes:
+                self.msg = "jobId is: " + node.attrib["val"]
+                jobId = int(node.attrib["val"])
+                return jobId
+            self.msg = "unknown error:" + self.receiveText
+        return jobId
+
 
 class CV_API(object):
     def __init__(self, cvToken):
@@ -4171,7 +4309,26 @@ class CV_API(object):
         self.msg = sourceBackupset.msg
         return jobId
 
-        return -1
+    def restoreActiveDirectoryBackupset(self, source, dest, backupset=None, operator=None):
+        # operator is {"vmGUID":"" , "vmName":"" , "vsaBrowseProxy":"", "vsaRestoreProxy":"",
+        #              "vCenterHost", "DCName", "esxHost", "datastore", "newVMName":"abc", "diskOption":"Auto/Thin/thick",
+        #              "Power":True/False, "overWrite":True/False}
+        # return JobId
+        # or -1 is error
+
+        sourceBackupset = CV_Backupset(
+            self.token, source, "Active Directory", backupset)
+        destBackupset = CV_Backupset(self.token, dest, "Active Directory")
+        if sourceBackupset.getIsNewBackupset() == True:
+            self.msg = "there is not this Active Directory Client " + source
+            return False
+        if destBackupset.getIsNewBackupset() == True:
+            self.msg = "there is not this Active Directory Client " + dest
+            return False
+        jobId = sourceBackupset.restoreActiveDirectoryBackupset(dest, operator)
+        self.msg = sourceBackupset.msg
+        return jobId
+
 
     def getJobList(self, client, agentType=None, backupset=None, type="backup"):
         # param client is clientName or clientId or None is all client
@@ -4272,16 +4429,16 @@ if __name__ == "__main__":
     # commvault-10
     # info = {"webaddr": "192.168.1.121", "port": "81", "username": "admin", "passwd": "admin", "token": "",
     #         "lastlogin": 0}
-    info = {"webaddr": "10.1.5.160", "port": "81", "username": "sa_cloud", "passwd": "1qaz@WSX", "token": "",
+    info = {"webaddr": "192.168.100.149", "port": "81", "username": "sa_cloud", "passwd": "1qaz@WSX", "token": "",
             "lastlogin": 0}
     # info = {"webaddr": "cv-server", "port": "81", "username": "cvadmin", "passwd": "1qaz@WSX", "token": "",
     #         "lastlogin": 0}
     cvToken = CV_RestApi_Token()
 
     cvToken.login(info)
-    cvAPI = CV_Client(cvToken)
+    cvAPI = CV_API(cvToken)
 
-    ret = cvAPI.getClient("10.64.7.43")  # backup status
+    ret = cvAPI.restoreActiveDirectoryBackupset("exchangeads", "exchangeads", operator={'restoreTime': ''})  # backup status
     # ret = cvAPI.getClientInfo(3)
     # ret = cvAPI.getClientList()
 

@@ -13,9 +13,10 @@ $(document).ready(function () {
 
         "columnDefs": [{
             "targets": 0,
+            "width": "240px",
             "mRender": function (data, type, full) {
                 // return "<a id='edit' data-toggle='modal' data-target='#static1'>" + data + "</a><input type='text' value='" + full.data_path + "' hidden>" + "<input type='text' value='" + full.copy_priority + "' hidden>" + "<input type='text' value='" + full.target_client + "' hidden>"
-                return "<a id='edit'  data-toggle='modal'  data-target='#mn_rcv_modal'>" + data + "</a>"
+                return "<a id='edit'  data-toggle='modal'  data-target='#mn_rcv_modal'>" + data + "</a>" + "<input type='text' value='" + full.model + "' hidden>"
             }
         }],
         "oLanguage": {
@@ -42,16 +43,43 @@ $(document).ready(function () {
         var el = e.relatedTarget;
         var jQuery_el = $(el);
 
-        // tab_init
-        $('#agent_type_tab a:first').tab('show');
+
 
         // 相同字段：源客户端、目标客户端下拉
-        $('#oracle_source_client').val(el.innerText);
+        $('#active_directory_source_client').val(el.innerText);
         $('#file_system_source_client').val(el.innerText);
         $('#sqlserver_source_client').val(el.innerText);
 
 
         var agent = jQuery_el.parent().next().html();
+        if (agent.indexOf("File System") == -1) {
+            $("a[href='#tab_filesystem']").parent().css("display", "none");
+        } else {
+            $("a[href='#tab_filesystem']").parent().css("display", "block");
+        }
+        if (agent.indexOf("SQL Server") == -1) {
+            $("a[href='#tab_sqlserver']").parent().css("display", "none");
+        } else {
+            $("a[href='#tab_sqlserver']").parent().css("display", "block");
+        }
+        if (agent.indexOf("Active Directory") == -1) {
+            $("a[href='#tab_active_directory']").parent().css("display", "none");
+        } else {
+            $("a[href='#tab_active_directory']").parent().css("display", "block");
+        }
+
+
+        // tab_init
+        // 查看第一个display:block的tab展示
+        // $('#agent_type_tab a:first').tab('show');
+        $('ul#agent_type_tab li').each(function () {
+            if ($(this).css('display')=='block'){
+                $(this).children("a").tab("show");
+                return false;
+            }
+        })
+
+
         $("#agent").val(agent);
 
         // 加载file_system_tree
@@ -85,15 +113,15 @@ $(document).ready(function () {
         $.fn.zTree.init($("#file_system_tree"), setting);
 
 
-        // Oracle
-        var oracleDatatable = $("#oracle_backup_point").dataTable();
-        oracleDatatable.fnClearTable(); //清空数据
-        oracleDatatable.fnDestroy();
-        $('#oracle_backup_point').dataTable({
+        // active_directory
+        var activeDirectoryDatatable = $("#active_directory_backup_point").dataTable();
+        activeDirectoryDatatable.fnClearTable(); //清空数据
+        activeDirectoryDatatable.fnDestroy();
+        $('#active_directory_backup_point').dataTable({
             "bAutoWidth": true,
             "bProcessing": true,
             "bSort": false,
-            "ajax": "../../oraclerecoverydata?clientName=" + $('#oracle_source_client').val(),
+            "ajax": "../../activedirectoryrecoverydata?clientName=" + $('#active_directory_source_client').val(),
             "columns": [
                 { "data": "jobId" },
                 { "data": "jobType" },
@@ -126,20 +154,20 @@ $(document).ready(function () {
             }
         });
 
-        $('#oracle_backup_point tbody').on('click', 'button#select', function () {
-            var table = $('#oracle_backup_point').DataTable();
+        $('#active_directory_backup_point tbody').on('click', 'button#select', function () {
+            var table = $('#active_directory_backup_point').DataTable();
             var data = table.row($(this).parents('tr')).data();
 
             // oracle
-            $("#oracle_datetimepicker").val(data.LastTime);
-            $("input[name='oracle_radios'][value='1']").prop("checked", false);
-            $("input[name='oracle_radios'][value='2']").prop("checked", true);
-            $("#oracle_browseJobId").val(data.jobId);
+            $("#active_directory_datetimepicker").val(data.LastTime);
+            $("input[name='active_directory_radios'][value='1']").prop("checked", false);
+            $("input[name='active_directory_radios'][value='2']").prop("checked", true);
+            $("#active_directory_browseJobId").val(data.jobId);
         });
 
-        $("#oracle_recovery_time_redio_group").click(function () {
-            if ($("input[name='oracle_radios']:checked").val() == 1) {
-                $("#oracle_datetimepicker").val("");
+        $("#active_directory_recovery_time_redio_group").click(function () {
+            if ($("input[name='active_directory_radios']:checked").val() == 1) {
+                $("#active_directory_datetimepicker").val("");
             }
         });
 
@@ -200,7 +228,6 @@ $(document).ready(function () {
                 $("#file_system_datetimepicker").val("");
             }
         });
-
 
         // sqlserver
         var sqlserverDatatable = $("#sqlserver_backup_point").dataTable();

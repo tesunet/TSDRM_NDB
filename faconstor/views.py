@@ -655,8 +655,8 @@ def index(request, funid):
         """)
         rows = cursor.fetchall()
 
-        cvsql = SQLApi.CVApi(settings.sql_credit)
-        cvsql.updateCVUTC()
+        # cvsql = SQLApi.CVApi(settings.sql_credit)
+        # cvsql.updateCVUTC()
 
         if len(rows) > 0:
             for task in rows:
@@ -6306,35 +6306,19 @@ def target(request, funid):
         #############################################
         dm = SQLApi.CustomFilter(settings.sql_credit)
 
-        oracle_data = dm.get_instance_from_oracle()
-
         # 获取包含oracle模块所有客户端
         installed_client = dm.get_all_install_clients()
-        oracle_data_list = []
+        client_list = []
         pre_od_name = ""
-        for od in oracle_data:
-            if "Oracle" in od["agent"]:
-                if od["clientname"] == pre_od_name:
-                    continue
-                client_id = od["clientid"]
-                client_os = ""
-                for ic in installed_client:
-                    if client_id == ic["client_id"]:
-                        client_os = ic["os"]
-
-                oracle_data_list.append({
-                    "clientid": od["clientid"],
-                    "clientname": od["clientname"],
-                    "agent": od["agent"],
-                    "instance": od["instance"],
-                    "os": client_os
-                })
-                # 去重
-                pre_od_name = od["clientname"]
-
+        for ic in installed_client:
+            client_list.append({
+                "clientid": ic["client_id"],
+                "clientname": ic["client_name"],
+                "os": ic["os"]
+            })
         return render(request, 'target.html',
                       {'username': request.user.userinfo.fullname,
-                       "oracle_data": json.dumps(oracle_data_list),
+                       "client_list": json.dumps(client_list),
                        "pagefuns": getpagefuns(funid, request=request)})
     else:
         return HttpResponseRedirect("/login")
@@ -6346,13 +6330,30 @@ def target_data(request):
         all_target_list = []
         for target in all_target:
             target_info = json.loads(target.info)
+            sqlserver_username, sqlserver_passwd, sqlserver_db = "", "", ""
+
+            try:
+                sqlserver_username = target_info["sqlserver_username"]
+            except:
+                pass
+            try:
+                sqlserver_passwd = target_info["sqlserver_passwd"]
+            except:
+                pass
+            try:
+                sqlserver_db = target_info["sqlserver_db"]
+            except:
+                pass
+
             all_target_list.append({
                 "id": target.id,
                 "client_id": target.client_id,
                 "client_name": target.client_name,
                 "os": target.os,
-                "agent": target_info["agent"],
-                "instance": target_info["instance"]
+
+                "sqlserver_username": sqlserver_username,
+                "sqlserver_passwd": sqlserver_passwd,
+                "sqlserver_db": sqlserver_db,
             })
         return JsonResponse({"data": all_target_list})
     else:
@@ -6364,9 +6365,11 @@ def target_save(request):
         target_id = request.POST.get("target_id", "")
         client_id = request.POST.get("client_id", "")
         client_name = request.POST.get("client_name", "").strip()
-        agent = request.POST.get("agent", "").strip()
-        instance = request.POST.get("instance", "").strip()
         os = request.POST.get("os", "").strip()
+        sqlserver_username = request.POST.get("sqlserver_username", "")
+        sqlserver_passwd = request.POST.get("sqlserver_passwd", "")
+        sqlserver_db = request.POST.get("sqlserver_db", "")
+        
         ret = 0
         info = ""
         try:
@@ -6381,10 +6384,6 @@ def target_save(request):
                 ret = 0
                 info = "目标客户端未选择。"
             else:
-                # if not data_path:
-                #     ret = 0
-                #     info = "数据重定向路径未填写。"
-                # else:
                 if target_id == 0:
                     # 判断是否存在
                     check_target = Target.objects.exclude(state="9").filter(client_id=client_id)
@@ -6398,8 +6397,9 @@ def target_save(request):
                             cur_target.client_name = client_name
                             cur_target.os = os
                             cur_target.info = json.dumps({
-                                "agent": agent,
-                                "instance": instance
+                                "sqlserver_username": sqlserver_username,
+                                "sqlserver_passwd": sqlserver_passwd,
+                                "sqlserver_db": sqlserver_db,
                             })
                             cur_target.save()
                         except:
@@ -6426,8 +6426,9 @@ def target_save(request):
                                 cur_target.client_name = client_name
                                 cur_target.os = os
                                 cur_target.info = json.dumps({
-                                    "agent": agent,
-                                    "instance": instance
+                                    "sqlserver_username": sqlserver_username,
+                                    "sqlserver_passwd": sqlserver_passwd,
+                                    "sqlserver_db": sqlserver_db,
                                 })
                                 cur_target.save()
                             except:
@@ -6476,42 +6477,50 @@ def target_del(request):
 
 def origin(request, funid):
     if request.user.is_authenticated():
-        #############################################
-        # clientid, clientname, agent, instance, os #
-        #############################################
+        # clientid, clientname, agent, os 
+        #   agent: []
+        #   [{client_id: "", client_name: "", agent_list: [], os: ""}]
+        #
         dm = SQLApi.CustomFilter(settings.sql_credit)
 
-        oracle_data = dm.get_instance_from_oracle()
-
-        # 获取包含oracle模块所有客户端
+        sub_client_info_list = dm.get_installed_sub_clients_all()
         installed_client = dm.get_all_install_clients()
-        oracle_data_list = []
-        pre_od_name = ""
-        for od in oracle_data:
-            if "Oracle" in od["agent"]:
-                if od["clientname"] == pre_od_name:
-                    continue
-                client_id = od["clientid"]
-                client_os = ""
-                for ic in installed_client:
-                    if client_id == ic["client_id"]:
-                        client_os = ic["os"]
 
-                oracle_data_list.append({
-                    "clientid": od["clientid"],
-                    "clientname": od["clientname"],
-                    "agent": od["agent"],
-                    "instance": od["instance"],
+        client_info_list = []
+
+        pre_client_list = []
+
+        for sc in sub_client_info_list:
+            client_id = sc["clientid"]
+            client_name = sc["clientname"]
+            agent = sc["idataagent"]
+            client_os = ""
+
+            for ic in installed_client:
+                if client_id == ic["client_id"]:
+                    client_os = ic["os"]
+                    break
+
+            if client_name not in pre_client_list:
+                client_info_list.append({
+                    "clientid": client_id,
+                    "clientname": client_name,
+                    "agent": [],
                     "os": client_os
                 })
-                # 去重
-                pre_od_name = od["clientname"]
+                pre_client_list.append(client_name)
+
+            # add agent
+            for ci in client_info_list:
+                if client_name == ci["clientname"] and agent not in ci["agent"]:
+                    ci["agent"].append(agent)
+                    break
 
         # 所有关联终端
         all_target = Target.objects.exclude(state="9")
         return render(request, 'origin.html',
                       {'username': request.user.userinfo.fullname,
-                       "oracle_data": json.dumps(oracle_data_list),
+                       "client_info_list": json.dumps(client_info_list),
                        "all_target": all_target,
                        "pagefuns": getpagefuns(funid, request=request)})
     else:
@@ -6523,21 +6532,15 @@ def origin_data(request):
         all_origin = Origin.objects.exclude(state="9").select_related("target")
         all_origin_list = []
         for origin in all_origin:
-            origin_info = json.loads(origin.info)
             all_origin_list.append({
                 "id": origin.id,
                 "client_id": origin.client_id,
                 "client_name": origin.client_name,
                 "os": origin.os,
-                "agent": origin_info["agent"],
-                "instance": origin_info["instance"],
+                "agent": origin.info,
                 "target_client": origin.target.id,
-                "target_client_name": origin.target.client_name,
-                "copy_priority": origin.copy_priority,
-                "db_open": origin.db_open,
-                "data_path": origin.data_path,
+                "target_client_name": origin.target.client_name
             })
-
         return JsonResponse({"data": all_origin_list})
     else:
         return HttpResponseRedirect("/login")
@@ -6549,18 +6552,12 @@ def origin_save(request):
         client_id = request.POST.get("client_id", "")
         client_name = request.POST.get("client_name", "").strip()
         agent = request.POST.get("agent", "").strip()
-        instance = request.POST.get("instance", "").strip()
         client_os = request.POST.get("os", "")
         target_client = request.POST.get("target_client", "")
-
-        copy_priority = request.POST.get("copy_priority", "")
-        db_open = request.POST.get("db_open", "")
-        data_path = request.POST.get("data_path", "")
+        print(agent)
         ret = 0
         info = ""
         try:
-            copy_priority = int(copy_priority)
-            db_open = int(db_open)
             origin_id = int(origin_id)
         except:
             ret = 0
@@ -6591,14 +6588,9 @@ def origin_save(request):
                                 cur_origin.client_id = client_id
                                 cur_origin.client_name = client_name
                                 cur_origin.os = client_os
-                                cur_origin.info = json.dumps({
-                                    "agent": agent,
-                                    "instance": instance
-                                })
+                                cur_origin.info = agent
                                 cur_origin.target_id = target_id
-                                cur_origin.copy_priority = copy_priority
-                                cur_origin.db_open = db_open
-                                cur_origin.data_path = data_path
+
                                 cur_origin.save()
                             except Exception as e:
                                 print(e)
@@ -6618,13 +6610,7 @@ def origin_save(request):
                                     cur_origin.client_id = client_id
                                     cur_origin.client_name = client_name
                                     cur_origin.os = client_os
-                                    cur_origin.info = json.dumps({
-                                        "agent": agent,
-                                        "instance": instance
-                                    })
-                                    cur_origin.copy_priority = copy_priority
-                                    cur_origin.db_open = db_open
-                                    cur_origin.data_path = data_path
+                                    cur_origin.info = agent
                                     cur_origin.target_id = target_id
                                     cur_origin.save()
                                 except:
@@ -7096,10 +7082,10 @@ def get_schedule_policy(request):
 def manualrecovery(request, funid):
     if request.user.is_authenticated():
         result = []
-        all_origins = Origin.objects.exclude(state="9")
+        all_targets = Target.objects.exclude(state="9")
         return render(request, 'manualrecovery.html',
                       {'username': request.user.userinfo.fullname, "manualrecoverypage": True,
-                       "pagefuns": getpagefuns(funid, request=request), "all_origins": all_origins})
+                       "pagefuns": getpagefuns(funid, request=request), "all_targets": all_targets})
     else:
         return HttpResponseRedirect("/login")
 
@@ -7114,7 +7100,7 @@ def manualrecoverydata(request):
                 "client_name": origin.client_name,
                 "client_id": origin.client_id,
                 "client_os": origin.os,
-                "model": json.loads(origin.info)["agent"],
+                "model": origin.info,
                 "data_path": origin.data_path if origin.data_path else "",
                 "copy_priority": origin.copy_priority,
                 "target_client": origin.target.client_name
@@ -7210,6 +7196,20 @@ def filesystemrecoverydata(request):
         return JsonResponse({"data": result})
     else:
         return HttpResponseRedirect("/login")
+
+
+def activedirectoryrecoverydata(request):
+    if request.user.is_authenticated():
+        client_name = request.GET.get('clientName', '')
+        result = []
+
+        dm = SQLApi.CustomFilter(settings.sql_credit)
+        result = dm.get_active_directory_backup_job_list(client_name)
+        print(result)
+        return JsonResponse({"data": result})
+    else:
+        return HttpResponseRedirect("/login")
+
 
 
 def getfiletree(request):

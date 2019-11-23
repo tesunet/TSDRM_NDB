@@ -1,5 +1,5 @@
 {% extends "base1.html" %} {% block content %}
-    <input type="text" id="oracle_data" name="oracle_data" value="{{ oracle_data }}" hidden>
+    <input type="text" id="client_list" name="client_list" value="{{ client_list }}" hidden>
     <div style="height:10px"></div>
     <div class="table-toolbar">
         <div id="error">
@@ -23,8 +23,6 @@
             <th style="width:40px;"> 序号</th>
             <th> 客户端ID</th>
             <th> 客户端名称</th>
-            <th> 应用</th>
-            <th> 实例</th>
             <th> 平台</th>
             <th style="width:50px;"> 操作</th>
         </tr>
@@ -53,25 +51,31 @@
                                 </div>
                             </div>
                             <div class="form-group">
-                                <label class="col-md-2 control-label"><span style="color:red; "></span>应用</label>
-                                <div class="col-md-10">
-                                    <input id="agent" type="text" name="agent" class="form-control " placeholder=""
-                                           value="Oracle" readonly>
-                                    <div class="form-control-focus"></div>
-                                </div>
-                            </div>
-                            <div class="form-group">
-                                <label class="col-md-2 control-label"><span style="color:red; "></span>实例</label>
-                                <div class="col-md-10">
-                                    <input id="instance" type="text" name="instance" class="form-control "
-                                           placeholder="" readonly>
-                                    <div class="form-control-focus"></div>
-                                </div>
-                            </div>
-                            <div class="form-group">
                                 <label class="col-md-2 control-label"><span style="color:red; "></span>平台</label>
                                 <div class="col-md-10">
                                     <input id="os" type="text" name="os" class="form-control " placeholder="" readonly>
+                                    <div class="form-control-focus"></div>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="col-md-2 control-label"><span style="color:red; "></span>SQL Server用户名</label>
+                                <div class="col-md-10">
+                                    <input id="sqlserver_username" type="text" name="sqlserver_username" class="form-control " placeholder=""
+                                        value="">
+                                    <div class="form-control-focus"></div>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="col-md-2 control-label"><span style="color:red; "></span>SQL Server密码</label>
+                                <div class="col-md-10">
+                                    <input id="sqlserver_passwd" type="password" name="sqlserver_passwd" class="form-control " placeholder="">
+                                    <div class="form-control-focus"></div>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="col-md-2 control-label"><span style="color:red; "></span>SQL Server库</label>
+                                <div class="col-md-10">
+                                    <input id="sqlserver_db" type="text" name="sqlserver_db" class="form-control " placeholder="">
                                     <div class="form-control-focus"></div>
                                 </div>
                             </div>

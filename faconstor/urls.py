@@ -164,8 +164,8 @@ urlpatterns = [
     url(r'^oraclerecoverydata/$', oraclerecoverydata),
 
     url(r'^sqlserverrecoverydata/$', sqlserverrecoverydata),
-
     url(r'^filesystemrecoverydata/$', filesystemrecoverydata),
+    url(r'^activedirectoryrecoverydata/$', activedirectoryrecoverydata),
 
 
     # 演练概况
