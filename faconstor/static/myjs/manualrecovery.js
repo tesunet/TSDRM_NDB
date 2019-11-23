@@ -5,9 +5,9 @@ $(document).ready(function () {
         "bProcessing": true,
         "ajax": "../manualrecoverydata/",
         "columns": [
-            { "data": "client_name" },
-            { "data": "model" },
-            { "data": "client_os" },
+            {"data": "client_name"},
+            {"data": "model"},
+            {"data": "client_os"},
 
         ],
 
@@ -44,7 +44,6 @@ $(document).ready(function () {
         var jQuery_el = $(el);
 
 
-
         // 相同字段：源客户端、目标客户端下拉
         $('#active_directory_source_client').val(el.innerText);
         $('#file_system_source_client').val(el.innerText);
@@ -73,7 +72,7 @@ $(document).ready(function () {
         // 查看第一个display:block的tab展示
         // $('#agent_type_tab a:first').tab('show');
         $('ul#agent_type_tab li').each(function () {
-            if ($(this).css('display')=='block'){
+            if ($(this).css('display') == 'block') {
                 $(this).children("a").tab("show");
                 return false;
             }
@@ -88,13 +87,13 @@ $(document).ready(function () {
                 enable: true,
                 url: '../../getfiletree/',
                 autoParam: ["id"],
-                otherParam: { "clientName": $('#file_system_source_client').val() },
+                otherParam: {"clientName": $('#file_system_source_client').val()},
                 dataFilter: filter
             },
             check: {
                 enable: true,
                 chkStyle: "checkbox",               //多选
-                chkboxType: { "Y": "s", "N": "ps" }  //不级联父节点选择
+                chkboxType: {"Y": "s", "N": "ps"}  //不级联父节点选择
             },
             view: {
                 showLine: false
@@ -123,12 +122,12 @@ $(document).ready(function () {
             "bSort": false,
             "ajax": "../../activedirectoryrecoverydata?clientName=" + $('#active_directory_source_client').val(),
             "columns": [
-                { "data": "jobId" },
-                { "data": "jobType" },
-                { "data": "Level" },
-                { "data": "StartTime" },
-                { "data": "LastTime" },
-                { "data": null },
+                {"data": "jobId"},
+                {"data": "jobType"},
+                {"data": "Level"},
+                {"data": "StartTime"},
+                {"data": "LastTime"},
+                {"data": null},
             ],
             "columnDefs": [{
                 "targets": -1,
@@ -181,12 +180,12 @@ $(document).ready(function () {
             "bSort": false,
             "ajax": "../../filesystemrecoverydata?clientName=" + $('#file_system_source_client').val(),
             "columns": [
-                { "data": "jobId" },
-                { "data": "jobType" },
-                { "data": "Level" },
-                { "data": "StartTime" },
-                { "data": "LastTime" },
-                { "data": null },
+                {"data": "jobId"},
+                {"data": "jobType"},
+                {"data": "Level"},
+                {"data": "StartTime"},
+                {"data": "LastTime"},
+                {"data": null},
             ],
             "columnDefs": [{
                 "targets": -1,
@@ -239,12 +238,12 @@ $(document).ready(function () {
             "bSort": false,
             "ajax": "../../sqlserverrecoverydata?clientName=" + $('#sqlserver_source_client').val(),
             "columns": [
-                { "data": "jobId" },
-                { "data": "jobType" },
-                { "data": "Level" },
-                { "data": "StartTime" },
-                { "data": "LastTime" },
-                { "data": null },
+                {"data": "jobId"},
+                {"data": "jobType"},
+                {"data": "Level"},
+                {"data": "StartTime"},
+                {"data": "LastTime"},
+                {"data": null},
             ],
             "columnDefs": [{
                 "targets": -1,
@@ -293,29 +292,24 @@ $(document).ready(function () {
         format: 'yyyy-mm-dd hh:ii:ss',
         pickerPosition: 'top-right'
     });
-    $('#recovery').click(function () {
-        if ($("input[name='optionsRadios']:checked").val() == "2" && $('#datetimepicker').val() == "")
+    $('#active_directory_recovery').click(function () {
+        if ($("input[name='active_directory_radios']:checked").val() == "2" && $('#active_directory_datetimepicker').val() == "")
             alert("请输入时间。");
         else {
             if ($('#destClient').val() == "")
                 alert("请选择目标客户端。");
             else {
                 var myrestoreTime = "";
-                if ($("input[name='optionsRadios']:checked").val() == "2" && $('#datetimepicker').val() != "") {
-                    myrestoreTime = $('#datetimepicker').val();
+                if ($("input[name='active_directory_radios']:checked").val() == "2" && $('#active_directory_datetimepicker').val() != "") {
+                    myrestoreTime = $('#active_directory_datetimepicker').val();
                 }
                 $.ajax({
                     type: "POST",
-                    url: "../../dooraclerecovery/",
+                    url: "../../do_active_directory_recovery/",
                     data: {
-                        sourceClient: $('#sourceClient').val(),
-                        destClient: $('#destClient').val(),
+                        sourceClient: $('#active_directory_source_client').val(),
+                        destClient: $('#active_directory_source_client').val(),
                         restoreTime: myrestoreTime,
-                        browseJobId: $("#browseJobId").val(),
-                        // 判断是oracle还是oracle rac
-                        agent: $("#agent").val(),
-                        data_path: $("#data_path").val(),
-                        copy_priority: $("#copy_priority").val()
                     },
                     success: function (data) {
                         alert(data);
@@ -329,6 +323,126 @@ $(document).ready(function () {
         }
     });
 
+    $('#sqlserver_recovery').click(function () {
+        if ($("input[name='sqlserver_radios']:checked").val() == "2" && $('#sqlserver_datetimepicker').val() == "")
+            alert("请输入时间。");
+        else {
+            if ($('#destClient').val() == "")
+                alert("请选择目标客户端。");
+            else {
+                var myrestoreTime = "";
+                if ($("input[name='sqlserver_radios']:checked").val() == "2" && $('#sqlserver_datetimepicker').val() != "") {
+                    myrestoreTime = $('#sqlserver_datetimepicker').val();
+                }
+                $.ajax({
+                    type: "POST",
+                    url: "../../do_sqlserver_recovery/",
+                    data: {
+                        sourceClient: $('#sqlserver_source_client').val(),
+                        destClient: $('#sqlserver_dest_client').val(),
+                        restoreTime: myrestoreTime,
+                    },
+                    success: function (data) {
+                        alert(data);
+                        $("#static1").modal("hide");
+                    },
+                    error: function (e) {
+                        alert("恢复失败，请于客服联系。");
+                    }
+                });
+            }
+        }
+    });
+
+
+    $('#sqlserver_recovery').click(function () {
+        if ($("input[name='sqlserver_radios']:checked").val() == "2" && $('#sqlserver_datetimepicker').val() == "")
+            alert("请输入时间。");
+        else {
+            if ($('#destClient').val() == "") {
+                alert("请选择目标客户端。");
+            } else {
+                var myrestoreTime = "";
+                if ($("input[name='sqlserver_radios']:checked").val() == "2" && $('#sqlserver_datetimepicker').val() != "") {
+                    myrestoreTime = $('#sqlserver_datetimepicker').val();
+                }
+                var iscover = "FALSE";
+                if ($('#isoverwrite').is(':checked')) {
+                    iscover = "TRUE";
+                }
+                $.ajax({
+                    type: "POST",
+                    url: "../../do_sqlserver_recovery/",
+                    data: {
+                        instanceName: $('#instanceName').val(),
+                        sourceClient: $('#sqlserver_dest_client').val(),
+                        destClient: $('#sqlserver_source_client').val(),
+                        restoreTime: myrestoreTime,
+                        iscover: iscover,
+                    },
+                    success: function (data) {
+                        alert(data);
+                    },
+                    error: function (e) {
+                        alert("恢复失败，请于客服联系。");
+                    }
+                });
+            }
+        }
+    });
+
+    $('#file_system_recovery').click(function () {
+        if ($("input[name='file_system_radio']:checked").val() == "2" && $('#file_system_datetimepicker').val() == "")
+            alert("请输入时间。");
+        else {
+            if ($('#destClient').val() == "")
+                alert("请选择目标客户端。");
+            else {
+                if ($("input[name='path']:checked").val() == "2" && $('#mypath').val() == "")
+                    alert("请输入指定路径。");
+                else {
+                    var myrestoreTime = "";
+                    if ($("input[name='file_system_radio']:checked").val() == "2" && $('#file_system_datetimepicker').val() != "")
+                        myrestoreTime = $('#file_system_datetimepicker').val();
+                    var iscover = $("input[name='overwrite']:checked").val();
+
+                    var mypath = "same";
+                    if ($("input[name='path']:checked").val() == "2")
+                        mypath = $('#mypath').val();
+                    var treeObj = $.fn.zTree.getZTreeObj("treeDemo");
+                    var nodes = treeObj.getCheckedNodes(true);
+                    var selectedfile = "";
+                    $("#fs_se_1 option").each(function () {
+                            var txt = $(this).val();
+                            selectedfile = selectedfile + txt + "*!-!*"
+                        }
+                    );
+                    $.ajax({
+                        type: "POST",
+                        url: "../../do_file_system_recovery/",
+                        data: {
+                            instanceName: $('#instanceName').val(),
+                            sourceClient: $('#file_system_source_client').val(),
+                            destClient: $('#file_system_dest_client').val(),
+                            restoreTime: myrestoreTime,
+                            iscover: iscover,
+                            mypath: mypath,
+                            selectedfile: selectedfile,
+                        },
+                        success: function (data) {
+                            alert(data);
+                        },
+                        error: function (e) {
+                            alert("恢复启动失败，请于客服联系。");
+                        }
+                    });
+                }
+            }
+        }
+    })
+
+
+    // file system select path
     $('#selectpath').click(function () {
         $('#fs_se_1').empty();
         var treeObj = $.fn.zTree.getZTreeObj("file_system_tree");

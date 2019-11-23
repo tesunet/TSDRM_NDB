@@ -6554,7 +6554,6 @@ def origin_save(request):
         agent = request.POST.get("agent", "").strip()
         client_os = request.POST.get("os", "")
         target_client = request.POST.get("target_client", "")
-        print(agent)
         ret = 0
         info = ""
         try:
@@ -7140,7 +7139,6 @@ def dooraclerecovery(request):
             if not instance:
                 return HttpResponse("恢复任务启动失败, 数据库实例不存在。")
             oraRestoreOperator = {"restoreTime": restoreTime, "browseJobId": None, "data_path": data_path, "copy_priority": copy_priority}
-            print("111111", oraRestoreOperator)
 
             cvToken = CV_RestApi_Token()
             cvToken.login(settings.CVApi_credit)
@@ -7160,6 +7158,116 @@ def dooraclerecovery(request):
                 return HttpResponse("无当前模块，恢复任务启动失败。")
         else:
             return HttpResponse("恢复任务启动失败。")
+
+
+def do_active_directory_recovery(request):
+    if request.user.is_authenticated():
+        if request.method == 'POST':
+            sourceClient = request.POST.get('sourceClient', '')
+            destClient = request.POST.get('destClient', '')
+            restoreTime = request.POST.get('restoreTime', '')
+
+            #################################
+            # sourceClient>> instance_name  #
+            #################################
+            instance = ""
+            try:
+                cur_origin = Origin.objects.exclude(state="9").get(client_name=sourceClient)
+            except Origin.DoesNotExist as e:
+                return HttpResponse("恢复任务启动失败, 源客户端不存在。")
+            else:
+                oracle_info = json.loads(cur_origin.info)
+
+                if oracle_info:
+                    try:
+                        instance = oracle_info["instance"]
+                    except:
+                        pass
+            if not instance:
+                return HttpResponse("恢复任务启动失败, 数据库实例不存在。")
+            oraRestoreOperator = {"restoreTime": restoreTime, "browseJobId": None}
+
+            cvToken = CV_RestApi_Token()
+            cvToken.login(settings.CVApi_credit)
+            cvAPI = CV_API(cvToken)
+
+            if cvAPI.restoreActiveDirectoryBackupset(sourceClient, destClient, instance, oraRestoreOperator):
+                return HttpResponse("恢复任务已经启动。" + cvAPI.msg)
+            else:
+                return HttpResponse("恢复任务启动失败。" + cvAPI.msg)
+        else:
+            return HttpResponse("恢复任务启动失败。")
+
+
+def do_sqlserver_recovery(request):
+    if request.user.is_authenticated():
+        if request.method == 'POST':
+            sourceClient = request.POST.get('sourceClient', '')
+            destClient = request.POST.get('destClient', '')
+            restoreTime = request.POST.get('restoreTime', '')
+            instanceName = request.POST.get('instanceName', '')
+            iscover = request.POST.get('iscover', '')
+            overWrite = False
+            if iscover == "TRUE":
+                overWrite = True
+
+            mssqlRestoreOperator = {"restoreTime": restoreTime, "overWrite": overWrite}
+            cvToken = CV_RestApi_Token()
+            cvToken.login(settings.CVApi_credit)
+            cvAPI = CV_API(cvToken)
+            if cvAPI.restoreMssqlBackupset(sourceClient, destClient, instanceName, mssqlRestoreOperator):
+                return HttpResponse("恢复任务已经启动。" + cvAPI.msg)
+            else:
+                return HttpResponse(u"恢复任务启动失败。" + cvAPI.msg)
+        else:
+            return HttpResponse("恢复任务启动失败。")
+    else:
+        return HttpResponseRedirect("/login")
+
+
+def do_file_system_recovery(request):
+    if request.user.is_authenticated():
+        sourceClient = request.POST.get('sourceClient', '')
+        destClient = request.POST.get('destClient', '')
+        restoreTime = request.POST.get('restoreTime', '')
+        instanceName = request.POST.get('instanceName', '')
+        iscover = request.POST.get('iscover', '')
+        mypath = request.POST.get('mypath', '')
+        selectedfile = request.POST.get('selectedfile')
+        sourceItemlist = selectedfile.split("*!-!*")
+        client = Origin.objects.filter(client_name=sourceClient)
+        if len(client) > 0:
+            if 'LINUX' in client[0].os.upper():
+                for i in range(len(sourceItemlist)):
+                    if sourceItemlist[i] == '\\':
+                        sourceItemlist[i] = '/'
+                    else:
+                        sourceItemlist[i] = sourceItemlist[i][1:-1]
+        inPlace = True
+        if mypath != "same":
+            inPlace = False
+        else:
+            mypath = ""
+        overWrite = False
+        if iscover == "TRUE":
+            overWrite = True
+
+        for sourceItem in sourceItemlist:
+            if sourceItem == "":
+                sourceItemlist.remove(sourceItem)
+
+        fileRestoreOperator = {"restoreTime": restoreTime, "overWrite": overWrite, "inPlace": inPlace,
+                               "destPath": mypath, "sourcePaths": sourceItemlist, "OS Restore": False}
+
+        cvToken = CV_RestApi_Token()
+        cvToken.login(settings.CVApi_credit)
+        cvAPI = CV_API(cvToken)
+        if cvAPI.restoreFSBackupset(sourceClient, destClient, "defaultBackupSet", fileRestoreOperator):
+            return HttpResponse("恢复任务已经启动。" + cvAPI.msg)
+        else:
+            return HttpResponse(u"恢复任务启动失败。" + cvAPI.msg)
+    else:
+        return HttpResponseRedirect("/login")
 
 
 def oraclerecoverydata(request):
@@ -7209,7 +7317,6 @@ def activedirectoryrecoverydata(request):
         return JsonResponse({"data": result})
     else:
         return HttpResponseRedirect("/login")
-
 
 
 def getfiletree(request):

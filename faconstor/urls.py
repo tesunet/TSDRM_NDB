@@ -167,6 +167,9 @@ urlpatterns = [
     url(r'^filesystemrecoverydata/$', filesystemrecoverydata),
     url(r'^activedirectoryrecoverydata/$', activedirectoryrecoverydata),
 
+    url(r'^do_active_directory_recovery/$', do_active_directory_recovery),
+    url(r'^do_sqlserver_recovery/$', do_sqlserver_recovery),
+    url(r'^do_file_system_recovery/$', do_file_system_recovery),
 
     # 演练概况
     url(r'^get_process_run_facts/$', get_process_run_facts),
