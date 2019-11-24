@@ -7082,6 +7082,7 @@ def manualrecovery(request, funid):
     if request.user.is_authenticated():
         result = []
         all_targets = Target.objects.exclude(state="9")
+        
         return render(request, 'manualrecovery.html',
                       {'username': request.user.userinfo.fullname, "manualrecoverypage": True,
                        "pagefuns": getpagefuns(funid, request=request), "all_targets": all_targets})
