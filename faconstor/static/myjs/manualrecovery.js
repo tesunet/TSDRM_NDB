@@ -380,7 +380,7 @@ $(document).ready(function () {
                     var mypath = "same";
                     if ($("input[name='path']:checked").val() == "2")
                         mypath = $('#mypath').val();
-                    var treeObj = $.fn.zTree.getZTreeObj("treeDemo");
+                    var treeObj = $.fn.zTree.getZTreeObj("file_system_tree");
                     var nodes = treeObj.getCheckedNodes(true);
                     var selectedfile = "";
                     $("#fs_se_1 option").each(function () {
