@@ -7082,7 +7082,7 @@ def manualrecovery(request, funid):
     if request.user.is_authenticated():
         result = []
         all_targets = Target.objects.exclude(state="9")
-        
+
         return render(request, 'manualrecovery.html',
                       {'username': request.user.userinfo.fullname, "manualrecoverypage": True,
                        "pagefuns": getpagefuns(funid, request=request), "all_targets": all_targets})
@@ -7184,26 +7184,23 @@ def do_active_directory_recovery(request):
 
 def do_sqlserver_recovery(request):
     if request.user.is_authenticated():
-        if request.method == 'POST':
-            sourceClient = request.POST.get('sourceClient', '')
-            destClient = request.POST.get('destClient', '')
-            restoreTime = request.POST.get('restoreTime', '')
-            instanceName = request.POST.get('instanceName', '')
-            iscover = request.POST.get('iscover', '')
-            overWrite = False
-            if iscover == "TRUE":
-                overWrite = True
+        sourceClient = request.POST.get('sourceClient', '')
+        destClient = request.POST.get('destClient', '')
+        restoreTime = request.POST.get('restoreTime', '')
+        instanceName = request.POST.get('instanceName', '')
+        iscover = request.POST.get('iscover', '')
+        overWrite = False
+        if iscover == "TRUE":
+            overWrite = True
 
-            mssqlRestoreOperator = {"restoreTime": restoreTime, "overWrite": overWrite}
-            cvToken = CV_RestApi_Token()
-            cvToken.login(settings.CVApi_credit)
-            cvAPI = CV_API(cvToken)
-            if cvAPI.restoreMssqlBackupset(sourceClient, destClient, instanceName, mssqlRestoreOperator):
-                return HttpResponse("恢复任务已经启动。" + cvAPI.msg)
-            else:
-                return HttpResponse(u"恢复任务启动失败。" + cvAPI.msg)
+        mssqlRestoreOperator = {"restoreTime": restoreTime, "overWrite": overWrite}
+        cvToken = CV_RestApi_Token()
+        cvToken.login(settings.CVApi_credit)
+        cvAPI = CV_API(cvToken)
+        if cvAPI.restoreMssqlBackupset(sourceClient, destClient, instanceName, mssqlRestoreOperator):
+            return HttpResponse("恢复任务已经启动。" + cvAPI.msg)
         else:
-            return HttpResponse("恢复任务启动失败。")
+            return HttpResponse(u"恢复任务启动失败。" + cvAPI.msg)
     else:
         return HttpResponseRedirect("/login")
 
@@ -7295,7 +7292,6 @@ def activedirectoryrecoverydata(request):
 
         dm = SQLApi.CustomFilter(settings.sql_credit)
         result = dm.get_active_directory_backup_job_list(client_name)
-        print(result)
         return JsonResponse({"data": result})
     else:
         return HttpResponseRedirect("/login")
@@ -7312,7 +7308,6 @@ def getfiletree(request):
         cvToken.login(settings.CVApi_credit)
         cvAPI = CV_API(cvToken)
         list = cvAPI.browse(clientID, "File System", None, id, False)
-        print(list)
         for node in list:
             root = {}
             root["id"] = node["path"]

@@ -43,7 +43,6 @@ $(document).ready(function () {
         var el = e.relatedTarget;
         var jQuery_el = $(el);
 
-
         // 相同字段：源客户端、目标客户端下拉
         $('#active_directory_source_client').val(el.innerText);
         $('#file_system_source_client').val(el.innerText);
@@ -76,7 +75,7 @@ $(document).ready(function () {
                 $(this).children("a").tab("show");
                 return false;
             }
-        })
+        });
 
 
         $("#agent").val(agent);
@@ -266,6 +265,10 @@ $(document).ready(function () {
                 },
                 "sZeroRecords": "没有检索到数据",
 
+            },
+            "initComplete": function (settings, data) {
+                // 写入实例名
+                $("#sqlserver_instance").val(data.data[0].instance);
             }
         });
 
@@ -342,7 +345,7 @@ $(document).ready(function () {
                     type: "POST",
                     url: "../../do_sqlserver_recovery/",
                     data: {
-                        instanceName: $('#instanceName').val(),
+                        instanceName: $('#sqlserver_instance').val(),
                         sourceClient: $('#sqlserver_dest_client').val(),
                         destClient: $('#sqlserver_source_client').val(),
                         restoreTime: myrestoreTime,
@@ -389,7 +392,6 @@ $(document).ready(function () {
                         type: "POST",
                         url: "../../do_file_system_recovery/",
                         data: {
-                            instanceName: $('#instanceName').val(),
                             sourceClient: $('#file_system_source_client').val(),
                             destClient: $('#file_system_dest_client').val(),
                             restoreTime: myrestoreTime,
