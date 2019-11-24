@@ -327,38 +327,6 @@ $(document).ready(function () {
         if ($("input[name='sqlserver_radios']:checked").val() == "2" && $('#sqlserver_datetimepicker').val() == "")
             alert("请输入时间。");
         else {
-            if ($('#destClient').val() == "")
-                alert("请选择目标客户端。");
-            else {
-                var myrestoreTime = "";
-                if ($("input[name='sqlserver_radios']:checked").val() == "2" && $('#sqlserver_datetimepicker').val() != "") {
-                    myrestoreTime = $('#sqlserver_datetimepicker').val();
-                }
-                $.ajax({
-                    type: "POST",
-                    url: "../../do_sqlserver_recovery/",
-                    data: {
-                        sourceClient: $('#sqlserver_source_client').val(),
-                        destClient: $('#sqlserver_dest_client').val(),
-                        restoreTime: myrestoreTime,
-                    },
-                    success: function (data) {
-                        alert(data);
-                        $("#static1").modal("hide");
-                    },
-                    error: function (e) {
-                        alert("恢复失败，请于客服联系。");
-                    }
-                });
-            }
-        }
-    });
-
-
-    $('#sqlserver_recovery').click(function () {
-        if ($("input[name='sqlserver_radios']:checked").val() == "2" && $('#sqlserver_datetimepicker').val() == "")
-            alert("请输入时间。");
-        else {
             if ($('#destClient').val() == "") {
                 alert("请选择目标客户端。");
             } else {

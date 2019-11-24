@@ -7167,31 +7167,13 @@ def do_active_directory_recovery(request):
             destClient = request.POST.get('destClient', '')
             restoreTime = request.POST.get('restoreTime', '')
 
-            #################################
-            # sourceClient>> instance_name  #
-            #################################
-            instance = ""
-            try:
-                cur_origin = Origin.objects.exclude(state="9").get(client_name=sourceClient)
-            except Origin.DoesNotExist as e:
-                return HttpResponse("恢复任务启动失败, 源客户端不存在。")
-            else:
-                oracle_info = json.loads(cur_origin.info)
-
-                if oracle_info:
-                    try:
-                        instance = oracle_info["instance"]
-                    except:
-                        pass
-            if not instance:
-                return HttpResponse("恢复任务启动失败, 数据库实例不存在。")
-            oraRestoreOperator = {"restoreTime": restoreTime, "browseJobId": None}
+            activeDirectoryRestoreOperator = {"restoreTime": restoreTime, "browseJobId": None}
 
             cvToken = CV_RestApi_Token()
             cvToken.login(settings.CVApi_credit)
             cvAPI = CV_API(cvToken)
 
-            if cvAPI.restoreActiveDirectoryBackupset(sourceClient, destClient, instance, oraRestoreOperator):
+            if cvAPI.restoreActiveDirectoryBackupset(sourceClient, destClient, activeDirectoryRestoreOperator):
                 return HttpResponse("恢复任务已经启动。" + cvAPI.msg)
             else:
                 return HttpResponse("恢复任务启动失败。" + cvAPI.msg)
@@ -7230,7 +7212,6 @@ def do_file_system_recovery(request):
         sourceClient = request.POST.get('sourceClient', '')
         destClient = request.POST.get('destClient', '')
         restoreTime = request.POST.get('restoreTime', '')
-        instanceName = request.POST.get('instanceName', '')
         iscover = request.POST.get('iscover', '')
         mypath = request.POST.get('mypath', '')
         selectedfile = request.POST.get('selectedfile')
