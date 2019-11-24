@@ -43,6 +43,34 @@ $(document).ready(function () {
         var el = e.relatedTarget;
         var jQuery_el = $(el);
 
+        // init
+        // SQL Server
+        $("#sqlserver_datetimepicker").val("");
+        $("input[name='sqlserver_radios'][value='1']").prop("checked", true);
+        $("input[name='sqlserver_radios'][value='2']").prop("checked", false);
+        $("input[name='isoverwrite']").prop("checked", false);
+
+        // File System
+        $("#file_system_datetimepicker").val("");
+        $("input[name='file_system_radio'][value='1']").prop("checked", true);
+        $("input[name='file_system_radio'][value='2']").prop("checked", false);
+
+        $("input[name='overwrite'][value='FALSE']").prop("checked", true);
+        $("input[name='overwrite'][value='TRUE']").prop("checked", false);
+
+        $("input[name='path'][value='1']").prop("checked", true);
+        $("input[name='path'][value='2']").prop("checked", false);
+        $("#mypath").val("");
+
+        $("#fs_se_1").empty();
+        $("#fs_se_1").append("<option value='\\'>\\</option>");
+
+        // Active Directory
+        $("#active_directory_datetimepicker").val("");
+        $("input[name='active_directory_radios'][value='1']").prop("checked", true);
+        $("input[name='active_directory_radios'][value='2']").prop("checked", false);
+
+
         // 相同字段：源客户端、目标客户端下拉
         $('#active_directory_source_client').val(el.innerText);
         $('#file_system_source_client').val(el.innerText);
