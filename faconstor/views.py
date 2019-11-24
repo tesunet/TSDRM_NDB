@@ -426,7 +426,8 @@ def get_process_index_data(request):
                     all_done_step_list = []
                     for step in all_steps:
                         step_id = step.id
-                        done_step_run = StepRun.objects.filter(step_id=step_id,processrun_id=processrun_id).filter(state="DONE")
+                        done_step_run = StepRun.objects.filter(step_id=step_id, processrun_id=processrun_id).filter(
+                            state="DONE")
                         if done_step_run.exists():
                             all_done_step_list.append(done_step_run[0])
 
@@ -998,7 +999,8 @@ def get_monitor_data(request):
 
         # 演练日志
         task_list = []
-        all_process_tasks = ProcessTask.objects.filter(logtype__in=["ERROR", "STOP", "END", "START"]).order_by("-starttime").select_related("processrun", "processrun__process")
+        all_process_tasks = ProcessTask.objects.filter(logtype__in=["ERROR", "STOP", "END", "START"]).order_by(
+            "-starttime").select_related("processrun", "processrun__process")
         for num, process_task in enumerate(all_process_tasks):
             if num == 50:
                 break
@@ -1018,7 +1020,8 @@ def get_monitor_data(request):
         all_processes = Process.objects.exclude(state="9").filter(type="cv_oracle")
         has_run_process = 0
         for process in all_processes:
-            process_run = process.processrun_set.exclude(state__in=["9", "REJECT"]).filter(starttime__startswith=datetime.datetime.now().date())
+            process_run = process.processrun_set.exclude(state__in=["9", "REJECT"]).filter(
+                starttime__startswith=datetime.datetime.now().date())
             if process_run.exists():
                 has_run_process += 1
 
@@ -1026,7 +1029,7 @@ def get_monitor_data(request):
                 if process_run.last().state == "RUN":
                     running_job += 1
 
-                if process_run.last().state=="DONE":
+                if process_run.last().state == "DONE":
                     success_job += 1
 
         not_running = 0
@@ -1043,7 +1046,8 @@ def get_monitor_data(request):
         drill_monitor = []
 
         for process in all_processes:
-            today_process_run = process.processrun_set.exclude(state__in=["9", "REJECT"]).filter(starttime__startswith=datetime.datetime.now().date())
+            today_process_run = process.processrun_set.exclude(state__in=["9", "REJECT"]).filter(
+                starttime__startswith=datetime.datetime.now().date())
 
             if today_process_run:
                 today_process_run = today_process_run.last()
@@ -1155,7 +1159,6 @@ def get_clients_status(request):
         return HttpResponseRedirect("/login")
 
 
-
 def get_process_run_rto(processrun):
     ########################################################
     # 构造出正确顺序的父级步骤RTO，                         #
@@ -1205,7 +1208,7 @@ def get_process_run_facts(request):
         #######################################################
         cv_oracle_process_list = []
 
-        all_process = Process.objects.exclude(state="9").order_by("sort").filter(type="cv_oracle").\
+        all_process = Process.objects.exclude(state="9").order_by("sort").filter(type="cv_oracle"). \
             prefetch_related("processrun_set", "step_set", "step_set__script_set", "step_set__script_set__origin")
 
         for cur_process in all_process:
@@ -1216,7 +1219,7 @@ def get_process_run_facts(request):
             all_process_run = cur_process.processrun_set.filter(state__in=["DONE", "STOP", "ERROR"]).filter(
                 starttime__startswith=today_date)
             process_run_today = 2
-            
+
             if all_process_run.exists():
                 cur_process_run = all_process_run.last()
                 if cur_process_run.state == "DONE":
@@ -1342,7 +1345,7 @@ def get_daily_processrun(request):
                     "invite": "1",
                 }
                 process_success_rate_list.append(invitations_dict)
-                
+
         return JsonResponse({"data": process_success_rate_list})
 
 
@@ -3280,7 +3283,8 @@ def custom_step_tree(request):
                                 "allgroups": group_string, "group": rootnode.group, "group_name": group_name,
                                 "scripts": script_string, "errors": errors, "title": title,
                                 "rto_count_in": rootnode.rto_count_in, "remark": rootnode.remark,
-                                "verifyitems": verify_items_string, "force_exec": rootnode.force_exec if rootnode.force_exec else 2}
+                                "verifyitems": verify_items_string,
+                                "force_exec": rootnode.force_exec if rootnode.force_exec else 2}
                 root["children"] = get_step_tree(rootnode, selectid)
                 root["state"] = {"opened": True}
                 treedata.append(root)
@@ -4729,7 +4733,8 @@ def get_current_scriptinfo(request):
         else:
             selected_script_id = None
 
-        scriptrun_objs = ScriptRun.objects.filter(id=selected_script_id).select_related("steprun", "steprun__processrun")
+        scriptrun_objs = ScriptRun.objects.filter(id=selected_script_id).select_related("steprun",
+                                                                                        "steprun__processrun")
         script_id = scriptrun_objs[0].script_id if scriptrun_objs else None
 
         script_objs = Script.objects.filter(id=script_id).select_related("hosts_manage", "origin")
@@ -6333,7 +6338,10 @@ def target(request, funid):
 
             # add agent
             for ci in client_list:
-                if client_name == ci["clientname"] and agent not in ci["agent"]:
+                if client_name == ci["clientname"] and agent not in ci["agent"] and agent in ["SQL Server",
+                                                                                              "Active Directory",
+                                                                                              "Windows File System",
+                                                                                              "Linux File System"]:
                     ci["agent"].append(agent)
                     break
 
@@ -6397,7 +6405,7 @@ def target_save(request):
         sqlserver_username = request.POST.get("sqlserver_username", "")
         sqlserver_passwd = request.POST.get("sqlserver_passwd", "")
         sqlserver_db = request.POST.get("sqlserver_db", "")
-        
+
         ret = 0
         info = ""
         try:
@@ -6542,7 +6550,10 @@ def origin(request, funid):
 
             # add agent
             for ci in client_info_list:
-                if client_name == ci["clientname"] and agent not in ci["agent"]:
+                if client_name == ci["clientname"] and agent not in ci["agent"] and agent in ["SQL Server",
+                                                                                              "Active Directory",
+                                                                                              "Windows File System",
+                                                                                              "Linux File System"]:
                     ci["agent"].append(agent)
                     break
 
@@ -7166,7 +7177,8 @@ def dooraclerecovery(request):
                         pass
             if not instance:
                 return HttpResponse("恢复任务启动失败, 数据库实例不存在。")
-            oraRestoreOperator = {"restoreTime": restoreTime, "browseJobId": None, "data_path": data_path, "copy_priority": copy_priority}
+            oraRestoreOperator = {"restoreTime": restoreTime, "browseJobId": None, "data_path": data_path,
+                                  "copy_priority": copy_priority}
 
             cvToken = CV_RestApi_Token()
             cvToken.login(settings.CVApi_credit)
@@ -7457,7 +7469,7 @@ def process_schedule_save(request):
                     # cur_periodictask.args = [cur_process.id, request]
                     cur_periodictask.kwargs = json.dumps({
                         'cur_process': cur_process.id,
-                        'creatuser':  request.user.username
+                        'creatuser': request.user.username
                     })
                     cur_periodictask.save()
                     cur_periodictask_id = cur_periodictask.id
@@ -7498,7 +7510,7 @@ def process_schedule_save(request):
                             cur_periodictask.task = "faconstor.tasks.create_process_run"
                             cur_periodictask.kwargs = json.dumps({
                                 'cur_process': cur_process.id,
-                                'creatuser':  request.user.username
+                                'creatuser': request.user.username
                             })
                             cur_periodictask_status = cur_periodictask.enabled
                             cur_periodictask.enabled = cur_periodictask_status
@@ -7524,7 +7536,8 @@ def process_schedule_data(request):
     if request.user.is_authenticated():
         result = []
 
-        all_process_schedules = ProcessSchedule.objects.exclude(state="9").select_related("process", "dj_periodictask", "dj_periodictask__crontab")
+        all_process_schedules = ProcessSchedule.objects.exclude(state="9").select_related("process", "dj_periodictask",
+                                                                                          "dj_periodictask__crontab")
 
         for process_schedule in all_process_schedules:
             process_id = process_schedule.process.id
