@@ -6301,21 +6301,48 @@ def get_contact_info(request):
 # 客户端管理
 def target(request, funid):
     if request.user.is_authenticated():
-        #############################################
-        # clientid, clientname, agent, instance, os #
-        #############################################
         dm = SQLApi.CustomFilter(settings.sql_credit)
 
-        # 获取包含oracle模块所有客户端
+        sub_client_info_list = dm.get_installed_sub_clients_all()
         installed_client = dm.get_all_install_clients()
+
         client_list = []
-        pre_od_name = ""
-        for ic in installed_client:
-            client_list.append({
-                "clientid": ic["client_id"],
-                "clientname": ic["client_name"],
-                "os": ic["os"]
-            })
+
+        pre_client_list = []
+
+        for sc in sub_client_info_list:
+            client_id = sc["clientid"]
+            client_name = sc["clientname"]
+            agent = sc["idataagent"]
+            client_os = ""
+
+            for ic in installed_client:
+                if client_id == ic["client_id"]:
+                    client_os = ic["os"]
+                    break
+
+            if client_name not in pre_client_list:
+                client_list.append({
+                    "clientid": client_id,
+                    "clientname": client_name,
+                    "agent": [],
+                    "os": client_os,
+                    "has_sqlserver": 0,
+                })
+                pre_client_list.append(client_name)
+
+            # add agent
+            for ci in client_list:
+                if client_name == ci["clientname"] and agent not in ci["agent"]:
+                    ci["agent"].append(agent)
+                    break
+
+            # has sqlserver
+            for ci in client_list:
+                if client_name == ci["clientname"] and agent == "SQL Server":
+                    ci["has_sqlserver"] = 1
+                    break
+
         return render(request, 'target.html',
                       {'username': request.user.userinfo.fullname,
                        "client_list": json.dumps(client_list),
@@ -6350,7 +6377,7 @@ def target_data(request):
                 "client_id": target.client_id,
                 "client_name": target.client_name,
                 "os": target.os,
-
+                "agent": target.agent,
                 "sqlserver_username": sqlserver_username,
                 "sqlserver_passwd": sqlserver_passwd,
                 "sqlserver_db": sqlserver_db,
@@ -6366,6 +6393,7 @@ def target_save(request):
         client_id = request.POST.get("client_id", "")
         client_name = request.POST.get("client_name", "").strip()
         os = request.POST.get("os", "").strip()
+        agent = request.POST.get("agent", "")
         sqlserver_username = request.POST.get("sqlserver_username", "")
         sqlserver_passwd = request.POST.get("sqlserver_passwd", "")
         sqlserver_db = request.POST.get("sqlserver_db", "")
@@ -6396,6 +6424,7 @@ def target_save(request):
                             cur_target.client_id = client_id
                             cur_target.client_name = client_name
                             cur_target.os = os
+                            cur_target.agent = agent
                             cur_target.info = json.dumps({
                                 "sqlserver_username": sqlserver_username,
                                 "sqlserver_passwd": sqlserver_passwd,
@@ -6425,6 +6454,7 @@ def target_save(request):
                                 cur_target.client_id = client_id
                                 cur_target.client_name = client_name
                                 cur_target.os = os
+                                cur_target.agent = agent
                                 cur_target.info = json.dumps({
                                     "sqlserver_username": sqlserver_username,
                                     "sqlserver_passwd": sqlserver_passwd,
@@ -6537,7 +6567,7 @@ def origin_data(request):
                 "client_id": origin.client_id,
                 "client_name": origin.client_name,
                 "os": origin.os,
-                "agent": origin.info,
+                "agent": origin.agent,
                 "target_client": origin.target.id,
                 "target_client_name": origin.target.client_name
             })
@@ -6551,7 +6581,7 @@ def origin_save(request):
         origin_id = request.POST.get("origin_id", "")
         client_id = request.POST.get("client_id", "")
         client_name = request.POST.get("client_name", "").strip()
-        agent = request.POST.get("agent", "").strip()
+        agent = request.POST.get("agent", "")
         client_os = request.POST.get("os", "")
         target_client = request.POST.get("target_client", "")
         ret = 0
@@ -6587,7 +6617,7 @@ def origin_save(request):
                                 cur_origin.client_id = client_id
                                 cur_origin.client_name = client_name
                                 cur_origin.os = client_os
-                                cur_origin.info = agent
+                                cur_origin.agent = agent
                                 cur_origin.target_id = target_id
 
                                 cur_origin.save()
@@ -6609,7 +6639,7 @@ def origin_save(request):
                                     cur_origin.client_id = client_id
                                     cur_origin.client_name = client_name
                                     cur_origin.os = client_os
-                                    cur_origin.info = agent
+                                    cur_origin.agent = agent
                                     cur_origin.target_id = target_id
                                     cur_origin.save()
                                 except:
@@ -7100,10 +7130,7 @@ def manualrecoverydata(request):
                 "client_name": origin.client_name,
                 "client_id": origin.client_id,
                 "client_os": origin.os,
-                "model": origin.info,
-                "data_path": origin.data_path if origin.data_path else "",
-                "copy_priority": origin.copy_priority,
-                "target_client": origin.target.client_name
+                "model": origin.agent,
             })
         return JsonResponse({"data": result})
     else:

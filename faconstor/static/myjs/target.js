@@ -1,15 +1,16 @@
-$(document).ready(function() {
+$(document).ready(function () {
     $('#target_dt').dataTable({
         "bAutoWidth": true,
         "bSort": false,
         "bProcessing": true,
         "ajax": "../target_data/",
         "columns": [
-            { "data": "id" },
-            { "data": "client_id" },
-            { "data": "client_name" },
-            { "data": "os" },
-            { "data": null }
+            {"data": "id"},
+            {"data": "client_id"},
+            {"data": "client_name"},
+            {"data": "agent"},
+            {"data": "os"},
+            {"data": null}
         ],
 
         "columnDefs": [{
@@ -36,7 +37,7 @@ $(document).ready(function() {
         }
     });
     // 行按钮
-    $('#target_dt tbody').on('click', 'button#delrow', function() {
+    $('#target_dt tbody').on('click', 'button#delrow', function () {
         if (confirm("确定要删除该条数据？")) {
             var table = $('#target_dt').DataTable();
             var data = table.row($(this).parents('tr')).data();
@@ -46,29 +47,39 @@ $(document).ready(function() {
                 data: {
                     target_id: data.id,
                 },
-                success: function(data) {
+                success: function (data) {
                     if (data.ret == 1) {
                         table.ajax.reload();
                     }
                     alert(data.info);
                 },
-                error: function(e) {
+                error: function (e) {
                     alert("删除失败，请于管理员联系。");
                 }
             });
 
         }
     });
-    $('#target_dt tbody').on('click', 'button#edit', function() {
+    $('#target_dt tbody').on('click', 'button#edit', function () {
         var table = $('#target_dt').DataTable();
         var data = table.row($(this).parents('tr')).data();
         $("#target_id").val(data.id);
         $("#target").val(data.client_id);
         $("#os").val(data.os);
+        $("#agent").val(data.agent);
 
-        $("#sqlserver_username").val(data.sqlserver_username);
-        $("#sqlserver_passwd").val(data.sqlserver_passwd);
-        $("#sqlserver_db").val(data.sqlserver_db);
+        if (data.agent.indexOf("SQL Server") != -1) {
+            $("#sqlserver_credit").show();
+            $("#sqlserver_username").val(data.sqlserver_username);
+            $("#sqlserver_passwd").val(data.sqlserver_passwd);
+            $("#sqlserver_db").val(data.sqlserver_db);
+        } else {
+            $("#sqlserver_credit").hide();
+            $("#sqlserver_username").val("");
+            $("#sqlserver_passwd").val("");
+            $("#sqlserver_db").val("");
+        }
+
     });
 
     // 加载oracle_data
@@ -81,18 +92,28 @@ $(document).ready(function() {
     }
 
     // 切换
-    $("#target").change(function() {
-        //..
+    $("#target").change(function () {
         var clientid = $(this).val();
         for (var i = 0; i < client_list.length; i++) {
             if (clientid == client_list[i].clientid) {
                 $("#os").val(client_list[i].os);
+                $("#agent").val(client_list[i].agent);
                 break
+            }
+        }
+
+        // 展示SQL Server展示
+        for (var j = 0; j < client_list.length; j++) {
+            if (clientid == client_list[j].clientid && client_list[j].has_sqlserver == 1) {
+                $("#sqlserver_credit").show();
+                break
+            } else {
+                $("#sqlserver_credit").hide();
             }
         }
     });
 
-    $("#new").click(function() {
+    $("#new").click(function () {
         $("#target_id").val("0");
         $("#target").val("");
         $("#agent").val("");
@@ -103,7 +124,7 @@ $(document).ready(function() {
         $("#sqlserver_db").val("");
     });
 
-    $('#save').click(function() {
+    $('#save').click(function () {
         var table = $('#target_dt').DataTable();
         $.ajax({
             type: "POST",
@@ -114,18 +135,20 @@ $(document).ready(function() {
                 client_id: $("#target").val(),
                 client_name: $("#target").find("option:selected").text(),
                 os: $("#os").val(),
+                agent: $("#agent").val(),
+
                 sqlserver_username: $("#sqlserver_username").val(),
                 sqlserver_passwd: $("#sqlserver_passwd").val(),
                 sqlserver_db: $("#sqlserver_db").val()
             },
-            success: function(data) {
+            success: function (data) {
                 if (data.ret == 1) {
                     $('#static').modal('hide');
                     table.ajax.reload();
                 }
                 alert(data.info);
             },
-            error: function(e) {
+            error: function (e) {
                 alert("页面出现错误，请于管理员联系。");
             }
         });

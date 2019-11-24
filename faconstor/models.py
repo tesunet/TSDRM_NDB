@@ -78,16 +78,17 @@ class Step(models.Model):
 class Target(models.Model):
     client_id = models.IntegerField("终端client_id", blank=True, null=True)
     client_name = models.CharField("终端client_name", blank=True, null=True, max_length=128)
-    info = models.TextField("客户端相关信息", blank=True, null=True)
+    info = models.TextField("SQL Server账户信息", blank=True, null=True)
     state = models.CharField("状态", blank=True, null=True, max_length=20)
     os = models.CharField("系统", blank=True, null=True, max_length=50)
+    agent = models.TextField("所有模块", blank=True, null=True)
 
 
 class Origin(models.Model):
     target = models.ForeignKey(Target, blank=True, null=True, verbose_name="默认关联终端")
     client_id = models.IntegerField("源端client_id", blank=True, null=True)
     client_name = models.CharField("源端client_name", blank=True, null=True, max_length=128)
-    info = models.TextField("客户端相关信息", blank=True, null=True)
+    agent = models.TextField("所有模块", blank=True, null=True)
     state = models.CharField("状态", blank=True, null=True, max_length=20)
     os = models.CharField("系统", blank=True, null=True, max_length=50)
     copy_priority_choices = (
