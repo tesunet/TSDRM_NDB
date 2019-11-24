@@ -3955,7 +3955,6 @@ class CV_Backupset(CV_Client):
             self.msg = "param not set"
             return jobId
 
-        sourceClient = source
         destClient = dest
         restoreTime = operator["restoreTime"]
 
