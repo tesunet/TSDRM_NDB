@@ -73,6 +73,7 @@ $(document).ready(function () {
 
         // 相同字段：源客户端、目标客户端下拉
         $('#active_directory_source_client').val(el.innerText);
+        $('#active_directory_dest_client').val(el.innerText);
         $('#file_system_source_client').val(el.innerText);
         $('#sqlserver_source_client').val(el.innerText);
 

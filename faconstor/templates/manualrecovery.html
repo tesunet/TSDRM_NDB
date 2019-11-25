@@ -86,15 +86,9 @@
                                         </div>
                                         <div class="form-group">
                                             <label class="col-lg-2 control-label">目标客户端</label>
-                                            <div class="col-md-10">
-                                                <select class="form-control" id="active_directory_dest_client"
-                                                    name="active_directory_dest_client">
-                                                    {% for target in all_targets %}
-                                                    <option selected value="{{ target.client_name }}">
-                                                        {{target.client_name}}
-                                                    </option>
-                                                    {% endfor %}
-                                                </select>
+                                            <div class="col-lg-10">
+                                                <input readonly id="active_directory_dest_client" autocomplete="off" type="text"
+                                                    name="active_directory_dest_client" class="form-control" value="">
                                             </div>
                                         </div>
                                         <div class="form-group  ">

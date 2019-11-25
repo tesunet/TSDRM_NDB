@@ -7213,7 +7213,7 @@ def do_active_directory_recovery(request):
             cvToken.login(settings.CVApi_credit)
             cvAPI = CV_API(cvToken)
 
-            if cvAPI.restoreActiveDirectoryBackupset(sourceClient, destClient, activeDirectoryRestoreOperator):
+            if cvAPI.restoreActiveDirectoryBackupset(sourceClient, destClient,operator=activeDirectoryRestoreOperator):
                 return HttpResponse("恢复任务已经启动。" + cvAPI.msg)
             else:
                 return HttpResponse("恢复任务启动失败。" + cvAPI.msg)
