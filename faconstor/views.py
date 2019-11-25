@@ -18,6 +18,7 @@ import requests
 from operator import itemgetter
 import logging
 from collections import OrderedDict
+import pymssql
 
 from django.contrib.auth.decorators import login_required
 from django.utils.timezone import utc
@@ -3504,26 +3505,38 @@ def get_all_groups(request):
 
 def process_design(request, funid):
     if request.user.is_authenticated():
+        # 源客户端/目标客户端
+        targets = Target.objects.exclude(state="9")
+        origins = Origin.objects.exclude(state="9")
+
         return render(request, "processdesign.html",
-                      {'username': request.user.userinfo.fullname, "pagefuns": getpagefuns(funid, request=request)})
+                      {'username': request.user.userinfo.fullname, "pagefuns": getpagefuns(funid, request=request),
+                       'targets': targets, "origins": origins})
+    else:
+        return HttpResponseRedirect("/index")
 
 
 def process_data(request):
     if request.user.is_authenticated():
         result = []
-        all_process = Process.objects.exclude(state="9").filter(type="cv_oracle").order_by("sort").values()
+        all_process = Process.objects.exclude(state="9").filter(type="cv_oracle").order_by("sort")
         if (len(all_process) > 0):
             for process in all_process:
                 result.append({
-                    "process_id": process["id"],
-                    "process_code": process["code"],
-                    "process_name": process["name"],
-                    "process_remark": process["remark"],
-                    "process_sign": process["sign"],
-                    "process_rto": process["rto"],
-                    "process_rpo": process["rpo"],
-                    "process_sort": process["sort"],
-                    "process_color": process["color"],
+                    "process_id": process.id,
+                    "process_code": process.code,
+                    "process_name": process.name,
+                    "process_remark": process.remark,
+                    "process_sign": process.sign,
+                    "process_rto": process.rto,
+                    "process_rpo": process.rpo,
+                    "process_sort": process.sort,
+                    "process_color": process.color,
+
+                    "target_id": process.target.id if process.target else "",
+                    "target_client_name": process.target.client_name if process.target else "",
+                    "origin_id": process.origin.id if process.origin else "",
+                    "origin_client_name": process.origin.client_name if process.origin else "",
                 })
         return JsonResponse({"data": result})
 
@@ -3541,6 +3554,9 @@ def process_save(request):
             rpo = request.POST.get('rpo', '')
             sort = request.POST.get('sort', '')
             color = request.POST.get('color', '')
+            target = request.POST.get('target', '')
+            origin = request.POST.get('origin', '')
+            print(request.POST)
             try:
                 id = int(id)
             except:
@@ -3551,53 +3567,68 @@ def process_save(request):
                 if name.strip() == '':
                     result["res"] = '预案名称不能为空。'
                 else:
-                    if sign.strip() == '':
-                        result["res"] = '是否签到不能为空。'
+                    try:
+                        origin = int(origin)
+                    except:
+                        result["res"] = '源客户端不能为空。'
                     else:
-                        # if color.strip() == "":
-                        #     result["res"] = '项目图标配色不能为空。'
-                        # else:
-                        if id == 0:
-                            all_process = Process.objects.filter(code=code).exclude(
-                                state="9").filter(type="cv_oracle")
-                            if (len(all_process) > 0):
-                                result["res"] = '预案编码:' + code + '已存在。'
-                            else:
-                                processsave = Process()
-                                processsave.url = '/cv_oracle'
-                                processsave.type = 'cv_oracle'
-                                processsave.code = code
-                                processsave.name = name
-                                processsave.remark = remark
-                                processsave.sign = sign
-                                processsave.rto = rto if rto else None
-                                processsave.rpo = rpo if rpo else None
-                                processsave.sort = sort if sort else None
-                                processsave.color = color
-                                processsave.save()
-                                result["res"] = "保存成功。"
-                                result["data"] = processsave.id
+                        try:
+                            target = int(target)
+                        except:
+                            result["res"] = '恢复资源不能为空。'
                         else:
-                            all_process = Script.objects.filter(code=code).exclude(
-                                id=id).exclude(state="9")
-                            if (len(all_process) > 0):
-                                result["res"] = '预案编码:' + code + '已存在。'
+                            if sign.strip() == '':
+                                result["res"] = '是否签到不能为空。'
                             else:
-                                try:
-                                    processsave = Process.objects.get(id=id)
-                                    processsave.code = code
-                                    processsave.name = name
-                                    processsave.remark = remark
-                                    processsave.sign = sign
-                                    processsave.rto = rto if rto else None
-                                    processsave.rpo = rpo if rpo else None
-                                    processsave.sort = sort if sort else None
-                                    processsave.color = color
-                                    processsave.save()
-                                    result["res"] = "保存成功。"
-                                    result["data"] = processsave.id
-                                except:
-                                    result["res"] = "修改失败。"
+                                # if color.strip() == "":
+                                #     result["res"] = '项目图标配色不能为空。'
+                                # else:
+                                if id == 0:
+                                    all_process = Process.objects.filter(code=code).exclude(
+                                        state="9").filter(type="cv_oracle")
+                                    if (len(all_process) > 0):
+                                        result["res"] = '预案编码:' + code + '已存在。'
+                                    else:
+                                        processsave = Process()
+                                        processsave.url = '/cv_oracle'
+                                        processsave.type = 'cv_oracle'
+                                        processsave.code = code
+                                        processsave.name = name
+                                        processsave.remark = remark
+                                        processsave.sign = sign
+                                        processsave.rto = rto if rto else None
+                                        processsave.rpo = rpo if rpo else None
+                                        processsave.sort = sort if sort else None
+                                        processsave.color = color
+                                        processsave.target_id = target
+                                        processsave.origin_id = origin
+                                        processsave.save()
+                                        result["res"] = "保存成功。"
+                                        result["data"] = processsave.id
+                                else:
+                                    all_process = Script.objects.filter(code=code).exclude(
+                                        id=id).exclude(state="9")
+                                    if (len(all_process) > 0):
+                                        result["res"] = '预案编码:' + code + '已存在。'
+                                    else:
+                                        try:
+                                            processsave = Process.objects.get(id=id)
+                                            processsave.code = code
+                                            processsave.name = name
+                                            processsave.remark = remark
+                                            processsave.sign = sign
+                                            processsave.rto = rto if rto else None
+                                            processsave.rpo = rpo if rpo else None
+                                            processsave.sort = sort if sort else None
+                                            processsave.color = color
+                                            processsave.target_id = target
+                                            processsave.origin_id = origin
+                                            processsave.save()
+                                            result["res"] = "保存成功。"
+                                            result["data"] = processsave.id
+                                        except Exception as e:
+                                            print(e)
+                                            result["res"] = "修改失败。"
         return HttpResponse(json.dumps(result))
 
 
@@ -6365,7 +6396,7 @@ def target_data(request):
         all_target_list = []
         for target in all_target:
             target_info = json.loads(target.info)
-            sqlserver_username, sqlserver_passwd, sqlserver_db = "", "", ""
+            sqlserver_username, sqlserver_passwd, sqlserver_db, sqlserver_ip = "", "", "", ""
 
             try:
                 sqlserver_username = target_info["sqlserver_username"]
@@ -6379,13 +6410,17 @@ def target_data(request):
                 sqlserver_db = target_info["sqlserver_db"]
             except:
                 pass
-
+            try:
+                sqlserver_ip = target_info["sqlserver_ip"]
+            except:
+                pass
             all_target_list.append({
                 "id": target.id,
                 "client_id": target.client_id,
                 "client_name": target.client_name,
                 "os": target.os,
                 "agent": target.agent,
+                "sqlserver_ip": sqlserver_ip,
                 "sqlserver_username": sqlserver_username,
                 "sqlserver_passwd": sqlserver_passwd,
                 "sqlserver_db": sqlserver_db,
@@ -6402,6 +6437,7 @@ def target_save(request):
         client_name = request.POST.get("client_name", "").strip()
         os = request.POST.get("os", "").strip()
         agent = request.POST.get("agent", "")
+        sqlserver_ip = request.POST.get("sqlserver_ip", "")
         sqlserver_username = request.POST.get("sqlserver_username", "")
         sqlserver_passwd = request.POST.get("sqlserver_passwd", "")
         sqlserver_db = request.POST.get("sqlserver_db", "")
@@ -6437,6 +6473,7 @@ def target_save(request):
                                 "sqlserver_username": sqlserver_username,
                                 "sqlserver_passwd": sqlserver_passwd,
                                 "sqlserver_db": sqlserver_db,
+                                "sqlserver_ip": sqlserver_ip,
                             })
                             cur_target.save()
                         except:
@@ -6467,6 +6504,7 @@ def target_save(request):
                                     "sqlserver_username": sqlserver_username,
                                     "sqlserver_passwd": sqlserver_passwd,
                                     "sqlserver_db": sqlserver_db,
+                                    "sqlserver_ip": sqlserver_ip,
                                 })
                                 cur_target.save()
                             except:
@@ -7650,3 +7688,209 @@ def process_schedule_del(request):
         })
     else:
         return HttpResponseRedirect("/login")
+
+
+def get_db_status(request):
+    if request.user.is_authenticated():
+        process_id = request.POST.get('process_id', "")
+
+        try:
+            process = Process.objects.get(id=process_id)
+        except Process.DoesNotExist as e:
+            return JsonResponse({
+                "ret": 0,
+                "data": []
+            })
+        else:
+            host_list = [process.origin, process.target]
+
+            adg_info_list = []
+            for num, host in enumerate(host_list):
+                if num == 0:
+                    adg_info_list.append({
+                        "db_status": "",
+                        "switchover_status": "",
+                        "host_name": host.client_name,
+                        "host_ip": "",
+                    })
+                else:
+                    db_status = ""
+                    switchover_status = 1
+
+                    try:
+                        sqlserver_info = json.loads(r"%s"%host.info)
+                    except:
+                        sqlserver_info = {}
+                    sqlserver_ip, sqlserver_name, sqlserver_password, sqlserver_db = "", "", "", ""
+
+                    try:
+                        sqlserver_ip = sqlserver_info["sqlserver_ip"]
+                    except:
+                        pass
+                    try:
+                        sqlserver_name = sqlserver_info["sqlserver_username"]
+                    except:
+                        pass
+                    try:
+                        sqlserver_password = sqlserver_info["sqlserver_passwd"]
+                    except:
+                        pass
+                    try:
+                        sqlserver_db = sqlserver_info["sqlserver_db"]
+                    except:
+                        pass
+                    try:
+                        conn = pymssql.connect(host=sqlserver_ip, user=sqlserver_name, password=sqlserver_password, database="master")
+                        with conn.cursor() as cursor:
+                            # db_status, switchover_status
+                            db_status_sql = "select is_read_only from sys.databases where name='%s'"%sqlserver_db
+
+                            cursor.execute(db_status_sql)
+                            db_status = cursor.fetchone()[0]
+                            print(db_status)
+                    except Exception as e:
+                        print(e)
+                        db_status = ""  # 失败
+                    else:
+                        conn.close()
+
+                    try:
+                        conn_commv = pymssql.connect(**settings.sql_credit)
+                        with conn_commv.cursor() as cursor_commv:
+                            # clientId, `instanceId, backupsetId` >> task_id
+                            disabled_sql = """SELECT disabled FROM [CommServ].[dbo].[TM_Task] WHERE taskId=(SELECT taskId from (SELECT TASK.[subTaskId]  
+                                  ,TASK.[subTaskName]   
+                                  ,TASK.[taskId]  
+                                  ,TASK.[subTaskType]  
+                                  ,TASK.[operationType]  
+                                  ,A.value clientId  
+                                  ,B.value clientName  
+                                  ,C.value instanceId  
+                                  ,D.value backupsetId  
+                            FROM [CommServ].[dbo].[TM_SubTask] AS TASK   
+                            LEFT JOIN  [CommServ].[dbo].[TM_SubTaskOptions] AS A ON A.subTaskId=TASK.subTaskId and A.optionId='227399085'  
+                            LEFT JOIN  [CommServ].[dbo].[TM_SubTaskOptions] AS B ON B.subTaskId=TASK.subTaskId and B.optionId='110143923'  
+                            LEFT JOIN  [CommServ].[dbo].[TM_SubTaskOptions] AS C ON   C.subTaskId=TASK.subTaskId and C.optionId='312734045'  
+                            LEFT JOIN  [CommServ].[dbo].[TM_SubTaskOptions] AS D ON   D.subTaskId=TASK.subTaskId and D.optionId='722571934'  
+                            WHERE  subTaskType='3') temp_task
+                            WHERE clientId={clientId} AND instanceId!='' AND backupsetId!='')""".format(
+                                clientId=host.client_id)
+                            cursor_commv.execute(disabled_sql)
+                            switchover_status = cursor_commv.fetchone()[0]
+                    except:
+                        switchover_status = 1
+                    else:
+                        conn_commv.close()
+
+
+                    adg_info_list.append({
+                        "db_status": db_status,
+                        "switchover_status": switchover_status,
+                        "host_name": host.client_name,
+                        "host_ip": sqlserver_ip
+                    })
+            print(adg_info_list)
+            return JsonResponse({
+                "ret": 1,
+                "data": adg_info_list
+            })
+    else:
+        return HttpResponseRedirect("/login")
+
+
+def cv_run(request):
+    if request.user.is_authenticated():
+        processid = request.POST.get('processid', '')
+        run_person = request.POST.get('run_person', '')
+        run_time = request.POST.get('run_time', '')
+        run_reason = request.POST.get('run_reason', '')
+        starttime = datetime.datetime.now()
+        try:
+            processid = int(processid)
+            process = Process.objects.get(id=processid)
+        except:
+            return JsonResponse({"res": "当前流程不存在。"})
+        else:
+            target = process.target
+
+            # 1.停commvault同步
+            try:
+                conn_commv = pymssql.connect(**settings.sql_credit)
+                with conn_commv.cursor() as cursor_commv:
+                    # clientId, `instanceId, backupsetId` >> task_id
+                    disabled_sql = """UPDATE [CommServ].[dbo].[TM_Task] SET disabled=1 WHERE taskId=(SELECT taskId from (SELECT TASK.[subTaskId]
+                          ,TASK.[subTaskName]
+                          ,TASK.[taskId]
+                          ,TASK.[subTaskType]
+                          ,TASK.[operationType]
+                          ,A.value clientId
+                          ,B.value clientName
+                          ,C.value instanceId
+                          ,D.value backupsetId
+                    FROM [CommServ].[dbo].[TM_SubTask] AS TASK
+                    LEFT JOIN  [CommServ].[dbo].[TM_SubTaskOptions] AS A ON A.subTaskId=TASK.subTaskId and A.optionId='227399085'
+                    LEFT JOIN  [CommServ].[dbo].[TM_SubTaskOptions] AS B ON B.subTaskId=TASK.subTaskId and B.optionId='110143923'
+                    LEFT JOIN  [CommServ].[dbo].[TM_SubTaskOptions] AS C ON   C.subTaskId=TASK.subTaskId and C.optionId='312734045'
+                    LEFT JOIN  [CommServ].[dbo].[TM_SubTaskOptions] AS D ON   D.subTaskId=TASK.subTaskId and D.optionId='722571934'
+                    WHERE  subTaskType='3') temp_task
+                    WHERE clientId={clientId} AND instanceId!='' AND backupsetId!='')""".format(clientId=target.client_id if target else "")
+                    cursor_commv.execute(disabled_sql)
+            except:
+                return JsonResponse({"res": "停commvault同步失败。"})
+            else:
+                conn_commv.commit()
+                conn_commv.close()
+
+            # 2.备库取消只读模式
+            # ALTER DATABASE [DBNAME] SET READ_WRITE WITH NO_WAIT
+            try:
+                sqlserver_info = json.loads(r"%s" % target.info)
+            except:
+                sqlserver_info = {}
+            sqlserver_ip, sqlserver_name, sqlserver_password, sqlserver_db = "", "", "", ""
+
+            try:
+                sqlserver_ip = sqlserver_info["sqlserver_ip"]
+            except:
+                pass
+            try:
+                sqlserver_name = sqlserver_info["sqlserver_username"]
+            except:
+                pass
+            try:
+                sqlserver_password = sqlserver_info["sqlserver_passwd"]
+            except:
+                pass
+            try:
+                sqlserver_db = sqlserver_info["sqlserver_db"]
+            except:
+                pass
+            try:
+                conn = pymssql.connect(host=sqlserver_ip, user=sqlserver_name, password=sqlserver_password,
+                                       database="master", autocommit=True)
+                with conn.cursor() as cursor:
+                    # db_status, switchover_status
+                    db_status_sql = "ALTER DATABASE [%s] SET READ_WRITE WITH NO_WAIT;" % sqlserver_db
+                    try:
+                        cursor.execute(db_status_sql)
+                    except Exception as e:
+                        print(e)
+                        conn.rollback()
+                    else:
+                        conn.commit()
+            except Exception as e:
+                return JsonResponse({"res": "备库取消只读模式失败。"})
+            else:
+                conn.commit()
+                conn.close()
+            # 成功，则添加流程记录
+            myprocessrun = ProcessRun()
+            myprocessrun.process = process
+            myprocessrun.starttime = starttime
+            myprocessrun.endtime = datetime.datetime.now()
+            myprocessrun.creatuser = request.user.username
+            myprocessrun.run_reason = run_reason
+            myprocessrun.state = "DONE"
+            myprocessrun.save()
+            # 成功时刷新数据库图标、箭头，刷新列表中的切换记录；失败时刷新按钮
+            return JsonResponse({"res": "启动成功。"})

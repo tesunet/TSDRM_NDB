@@ -14,6 +14,8 @@ $(document).ready(function () {
             {"data": "process_rpo"},
             {"data": "process_sort"},
             {"data": "process_color"},
+            {"data": "origin_client_name"},
+            {"data": "target_client_name"},
             {"data": null}
         ],
 
@@ -93,6 +95,9 @@ $(document).ready(function () {
         $("#rpo").val(data.process_rpo);
         $("#sort").val(data.process_sort);
         $("#process_color").val(data.process_color);
+
+        $("#origin").val(data.origin_id);
+        $("#target").val(data.target_id);
     });
 
     $("#new").click(function () {
@@ -105,6 +110,8 @@ $(document).ready(function () {
         $("#rpo").val("");
         $("#sort").val("");
         $("#process_color").val("");
+        $("#target").val("");
+        $("#origin").val("");
     });
 
     $('#save').click(function () {
@@ -125,6 +132,8 @@ $(document).ready(function () {
                     rpo: $("#rpo").val(),
                     sort: $("#sort").val(),
                     color: $("#process_color").val(),
+                    target: $("#target").val(),
+                    origin: $("#origin").val(),
                 },
             success: function (data) {
                 var myres = data["res"];
@@ -140,9 +149,5 @@ $(document).ready(function () {
                 alert("页面出现错误，请于管理员联系。");
             }
         });
-    })
-
-    $('#error').click(function () {
-        $(this).hide()
-    })
+    });
 });

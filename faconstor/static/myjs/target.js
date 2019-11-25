@@ -70,10 +70,12 @@ $(document).ready(function () {
 
         if (data.agent.indexOf("SQL Server") != -1) {
             $("#sqlserver_credit").show();
+            $("#sqlserver_ip").val(data.sqlserver_ip);
             $("#sqlserver_username").val(data.sqlserver_username);
             $("#sqlserver_passwd").val(data.sqlserver_passwd);
             $("#sqlserver_db").val(data.sqlserver_db);
         } else {
+            $("#sqlserver_ip").val(data.sqlserver_ip);
             $("#sqlserver_credit").hide();
             $("#sqlserver_username").val("");
             $("#sqlserver_passwd").val("");
@@ -119,6 +121,7 @@ $(document).ready(function () {
         $("#agent").val("");
         $("#os").val("");
 
+        $("#sqlserver_ip").val("");
         $("#sqlserver_username").val("");
         $("#sqlserver_passwd").val("");
         $("#sqlserver_db").val("");
@@ -137,6 +140,7 @@ $(document).ready(function () {
                 os: $("#os").val(),
                 agent: $("#agent").val(),
 
+                sqlserver_ip: $("#sqlserver_ip").val(),
                 sqlserver_username: $("#sqlserver_username").val(),
                 sqlserver_passwd: $("#sqlserver_passwd").val(),
                 sqlserver_db: $("#sqlserver_db").val()

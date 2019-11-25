@@ -51,6 +51,8 @@ class Process(models.Model):
     url = models.CharField("页面链接", blank=True, max_length=100)
     type = models.CharField("预案类型", blank=True, max_length=100, null=True)
     color = models.CharField("颜色", blank=True, max_length=50)
+    origin = models.ForeignKey("Origin", blank=True, null=True, verbose_name='源端')
+    target = models.ForeignKey("target", blank=True, null=True, verbose_name='恢复资源')
 
 
 class Step(models.Model):

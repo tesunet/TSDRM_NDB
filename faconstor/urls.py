@@ -92,6 +92,10 @@ urlpatterns = [
     url(r'^fill_with_invitation/$', fill_with_invitation),
     url(r'^save_modify_invitation/$', save_modify_invitation),
 
+    url(r'^get_db_status/$', get_db_status),
+
+    url(r'^cv_run/$', cv_run),
+
     url(r'^getrunsetps/$', getrunsetps),
     url(r'^cv_oracle_continue/$', cv_oracle_continue),
     url(r'^processsignsave/$', processsignsave),
