@@ -171,13 +171,13 @@ class CVApi(DataMonitor):
                 sub_client_sql = """SELECT [appid],[clientid],[clientname],[idataagent],[idataagentstatus],[idagentbkenable],[idagentrstenable],[instance],[backupset],[subclient],[subclientstatus],[schedjobpattern],
                                      [schedbackupday],[schedbackuptime],[schednextbackuptime],[data_sp],[data_sp_copy],[data_sp_copy_retendays],[data_sp_copy_fullcycles],[data_sp_schedauxcopypattern],[data_sp_schedauxcopyday],[data_sp_schedauxcopytime],
                                      [data_sp_schednextauxcopytime],[data_sp_scheddestcopy],[log_sp],[LastFullBkpSize(Bytes)],[LastIncBkpSize(Bytes)],[LastDiffBkpSize(Bytes)],[QDisplayName],[xmlDisplayName]
-                                     FROM [commserv].[dbo].[CommCellSubClientConfig] WHERE [clientid]='{0}' AND [backupset]!='Indexing BackupSet' AND [idataagent] LIKE '%Oracle%'""".format(
+                                     FROM [commserv].[dbo].[CommCellSubClientConfig] WHERE [clientid]='{0}' AND [backupset]!='Indexing BackupSet'""".format(
                     client)
             elif isinstance(client, str):
                 sub_client_sql = """SELECT [appid],[clientid],[clientname],[idataagent],[idataagentstatus],[idagentbkenable],[idagentrstenable],[instance],[backupset],[subclient],[subclientstatus],[schedjobpattern],
                                      [schedbackupday],[schedbackuptime],[schednextbackuptime],[data_sp],[data_sp_copy],[data_sp_copy_retendays],[data_sp_copy_fullcycles],[data_sp_schedauxcopypattern],[data_sp_schedauxcopyday],[data_sp_schedauxcopytime],
                                      [data_sp_schednextauxcopytime],[data_sp_scheddestcopy],[log_sp],[LastFullBkpSize(Bytes)],[LastIncBkpSize(Bytes)],[LastDiffBkpSize(Bytes)],[QDisplayName],[xmlDisplayName]
-                                     FROM [commserv].[dbo].[CommCellSubClientConfig] WHERE [clientname]='{0}' AND [backupset]!='Indexing BackupSet' AND [idataagent] LIKE '%Oracle%'""".format(
+                                     FROM [commserv].[dbo].[CommCellSubClientConfig] WHERE [clientname]='{0}' AND [backupset]!='Indexing BackupSet'""".format(
                     client)
             else:
                 self.msg = "请传入正确的客户端id或名称。"
@@ -186,7 +186,7 @@ class CVApi(DataMonitor):
             sub_client_sql = """SELECT [appid],[clientid],[clientname],[idataagent],[idataagentstatus],[idagentbkenable],[idagentrstenable],[instance],[backupset],[subclient],[subclientstatus],[schedjobpattern],
                                  [schedbackupday],[schedbackuptime],[schednextbackuptime],[data_sp],[data_sp_copy],[data_sp_copy_retendays],[data_sp_copy_fullcycles],[data_sp_schedauxcopypattern],[data_sp_schedauxcopyday],[data_sp_schedauxcopytime],
                                  [data_sp_schednextauxcopytime],[data_sp_scheddestcopy],[log_sp],[LastFullBkpSize(Bytes)],[LastIncBkpSize(Bytes)],[LastDiffBkpSize(Bytes)],[QDisplayName],[xmlDisplayName]
-                                 FROM [commserv].[dbo].[CommCellSubClientConfig] WHERE [backupset]!='Indexing BackupSet' AND [idataagent] LIKE '%Oracle%'"""
+                                 FROM [commserv].[dbo].[CommCellSubClientConfig] WHERE [backupset]!='Indexing BackupSet'"""
         sub_clients = []
         content = self.fetch_all(sub_client_sql)
         for i in content:
@@ -231,7 +231,7 @@ class CVApi(DataMonitor):
     def get_all_storage(self):
         storage_sql = """SELECT [storagepolicy],[defaultcopy],[hardwarecompress],[maxstreams],[drivepool],[library],[appid],[clientname],[idataagent],[instance],[backupset],[subclient]
                           FROM [commserv].[dbo].[CommCellStoragePolicy]
-                          WHERE [hardwarecompress]!='Unknown' AND [idataagent] LIKE '%Oracle%'"""
+                          WHERE [hardwarecompress]!='Unknown'"""
 
         storages = []
         content = self.fetch_all(storage_sql)
@@ -250,7 +250,6 @@ class CVApi(DataMonitor):
                 "backupset": i[10],
                 # "subclient": i[11],
             })
-
         extra_content = self.get_installed_sub_clients_for_info()
         # 去重
         extra_content = remove_duplicate_for_info(extra_content)
@@ -281,6 +280,7 @@ class CVApi(DataMonitor):
                 "idataagent": e_content['idataagent'],
                 "backupset": e_content['backupset'],
             })
+        print(whole_list)
         return whole_list
 
     def get_all_schedules(self):
@@ -526,7 +526,7 @@ class CVApi(DataMonitor):
 
         backupset_content_list = []
         for i in backupset_content:
-            if i[1] in ["Mysql", "Windows File System", "Linux File System"]:
+            if i[1] in ["Mysql", "Windows File System", "Linux File System", "Active Directory"]:
                 backupset_content_list.append({
                     "clientname": i[0],
                     "idataagent": i[1],
@@ -1325,7 +1325,7 @@ class CustomFilter(CVApi):
             pre_agent_list = []
 
             for job in job_list:
-                if job["idataagent"] not in pre_agent_list and job["clientname"] == client["client_name"] and "Oracle" in job["idataagent"]:
+                if job["idataagent"] not in pre_agent_list and job["clientname"] == client["client_name"]:
                     pre_agent_list.append(job["idataagent"])
 
                     job_status = job["jobstatus"]
