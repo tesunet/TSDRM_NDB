@@ -16,7 +16,7 @@ $(document).ready(function () {
             "width": "240px",
             "mRender": function (data, type, full) {
                 // return "<a id='edit' data-toggle='modal' data-target='#static1'>" + data + "</a><input type='text' value='" + full.data_path + "' hidden>" + "<input type='text' value='" + full.copy_priority + "' hidden>" + "<input type='text' value='" + full.target_client + "' hidden>"
-                return "<a id='edit'  data-toggle='modal'  data-target='#mn_rcv_modal'>" + data + "</a>" + "<input type='text' value='" + full.model + "' hidden>"
+                return "<a id='edit'  data-toggle='modal'  data-target='#mn_rcv_modal'>" + data + "</a>" + "<input type='text' value='" + full.model + "' hidden>" + "<input type='text' value='" + full.target + "' hidden>"
             }
         }],
         "oLanguage": {
@@ -70,15 +70,19 @@ $(document).ready(function () {
         $("input[name='active_directory_radios'][value='1']").prop("checked", true);
         $("input[name='active_directory_radios'][value='2']").prop("checked", false);
 
-
-        // 相同字段：源客户端、目标客户端下拉
+        console.log(jQuery_el.next().val())
+        // 相同字段：源客户端、恢复资源下拉
         $('#active_directory_source_client').val(el.innerText);
         $('#active_directory_dest_client').val(el.innerText);
         $('#file_system_source_client').val(el.innerText);
         $('#sqlserver_source_client').val(el.innerText);
 
+        // 默认选中恢复资源
+        var target = jQuery_el.next().next().val();
+        $('#file_system_dest_client').val(target);
+        $('#sqlserver_dest_client').val(target);
 
-        var agent = jQuery_el.parent().next().html();
+        var agent = jQuery_el.next().val();
         if (agent.indexOf("File System") == -1) {
             $("a[href='#tab_filesystem']").parent().css("display", "none");
         } else {

@@ -7180,6 +7180,9 @@ def manualrecoverydata(request):
                 "client_id": origin.client_id,
                 "client_os": origin.os,
                 "model": origin.agent,
+
+                # 恢复资源
+                "target": origin.target.client_name
             })
         return JsonResponse({"data": result})
     else:
