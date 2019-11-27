@@ -286,7 +286,7 @@ class CVApi(DataMonitor):
     def get_all_schedules(self):
         schedule_sql = """SELECT [CommCellId],[CommCellName],[scheduleId],[scheduePolicy],[scheduleName],[scheduletask],[schedbackuptype],[schedpattern],[schedinterval]
         ,[schedbackupday],[schedbackupTime],[schednextbackuptime],[appid],[clientName],[idaagent],[instance],[backupset],[subclient]
-        FROM [commserv].[dbo].[CommCellBkScheduleForSubclients] WHERE [idaagent] LIKE '%Oracle%'"""
+        FROM [commserv].[dbo].[CommCellBkScheduleForSubclients]"""
 
         schedules = []
         content = self.fetch_all(schedule_sql)
