@@ -2715,12 +2715,6 @@ class CV_Backupset(CV_Client):
             if "copy_priority" not in keys:
                 self.msg = "operator - no copy_priority"
                 return jobId
-            if "db_open" not in keys:
-                self.msg = "operator - no db_open"
-                return jobId
-            if "curSCN" not in keys:
-                self.msg = "operator - no curSCN"
-                return jobId
         else:
             self.msg = "param not set"
             return jobId
@@ -2730,23 +2724,11 @@ class CV_Backupset(CV_Client):
         restoreTime = operator["restoreTime"]
         data_path = operator["data_path"]
         copy_priority = operator["copy_priority"]
-        curSCN = operator["curSCN"] if operator["curSCN"] else ""
-        db_open = operator["db_open"]
 
         try:
             copy_priority = int(copy_priority)
         except ValueError as e:
             copy_priority = 1
-
-        try:
-            db_open = int(db_open)
-        except ValueError as e:
-            db_open = 1
-
-        if db_open == 2:
-            db_open = "false"
-        else:
-            db_open = "true"
 
         copyPrecedence_xml = '''                                        
         <copyPrecedence>
@@ -2902,18 +2884,17 @@ class CV_Backupset(CV_Client):
                                     <isDeviceTypeSelected>false</isDeviceTypeSelected>
                                     <logTarget></logTarget>
                                     <logTime>
-                                        <fromTimeValue>{restoreTime}</fromTimeValue>
                                         <toTimeValue>{restoreTime}</toTimeValue>
                                     </logTime>
                                     <maxOpenFiles>0</maxOpenFiles>
                                     <mountDatabase>false</mountDatabase>
                                     <noCatalog>true</noCatalog>
-                                    <openDatabase>{db_open}</openDatabase>
+                                    <openDatabase>true</openDatabase>
                                     <osID>2</osID>
                                     <partialRestore>false</partialRestore>
                                     <recover>true</recover>
-                                    <recoverFrom>2</recoverFrom>
-                                    <recoverSCN>{curSCN}</recoverSCN>
+                                    <recoverFrom>4</recoverFrom>
+                                    <recoverSCN></recoverSCN>
                                     <recoverTime>
                                         <timeValue>{restoreTime}</timeValue>
                                     </recoverTime>
@@ -2977,8 +2958,7 @@ class CV_Backupset(CV_Client):
                 </taskInfo>
             </TMMsg_CreateTaskReq>'''.format(sourceClient=sourceClient, destClient=destClient, instance=instance,
                                              restoreTime="{0:%Y-%m-%d %H:%M:%S}".format(datetime.datetime.now()),
-                                             copyPrecedence_xml=copyPrecedence_xml, data_path_xml=data_path_xml,
-                                             curSCN=curSCN, db_open=db_open)
+                                             copyPrecedence_xml=copyPrecedence_xml, data_path_xml=data_path_xml)
 
         if restoreTime:
             restoreoracleXML = '''
@@ -3105,13 +3085,12 @@ class CV_Backupset(CV_Client):
                         <isDeviceTypeSelected>false</isDeviceTypeSelected>
                         <logTarget></logTarget>
                         <logTime>
-                          <fromTimeValue>{restoreTime}</fromTimeValue>
                           <toTimeValue>{restoreTime}</toTimeValue>
                         </logTime>
                         <maxOpenFiles>0</maxOpenFiles>
                         <mountDatabase>false</mountDatabase>
                         <noCatalog>true</noCatalog>
-                        <openDatabase>{db_open}</openDatabase>
+                        <openDatabase>true</openDatabase>
                         <osID>2</osID>
                         <partialRestore>false</partialRestore>
                         <recover>true</recover>
@@ -3134,7 +3113,7 @@ class CV_Backupset(CV_Client):
                         <restoreTablespace>false</restoreTablespace>
                         <restoreTag></restoreTag>
                         <restoreTime>
-                          <timeValue>2019-11-03 13:43:44</timeValue>
+                          <timeValue>{restoreTime}</timeValue>
                         </restoreTime>
                         <setDBId>true</setDBId>
                         <skipTargetConnection>false</skipTargetConnection>
@@ -3183,7 +3162,7 @@ class CV_Backupset(CV_Client):
             </TMMsg_CreateTaskReq>
             '''.format(sourceClient=sourceClient, destClient=destClient, instance=instance,
                        restoreTime=restoreTime, copyPrecedence_xml=copyPrecedence_xml,
-                       data_path_xml=data_path_xml, db_open=db_open)
+                       data_path_xml=data_path_xml)
 
         try:
             root = ET.fromstring(restoreoracleXML)
@@ -3229,12 +3208,6 @@ class CV_Backupset(CV_Client):
             if "copy_priority" not in keys:
                 self.msg = "operator - no copy_priority"
                 return jobId
-            if "db_open" not in keys:
-                self.msg = "operator - no db_open"
-                return jobId
-            if "curSCN" not in keys:
-                self.msg = "operator - no curSCN"
-                return jobId
         else:
             self.msg = "param not set"
             return jobId
@@ -3245,23 +3218,11 @@ class CV_Backupset(CV_Client):
         browseJobId = operator["browseJobId"]
         data_path = operator["data_path"]
         copy_priority = operator["copy_priority"]
-        db_open = operator["db_open"]
-        curSCN = operator["curSCN"] if operator["curSCN"] else ""
 
         try:
             copy_priority = int(copy_priority)
         except ValueError as e:
             copy_priority = 1
-
-        try:
-            db_open = int(db_open)
-        except ValueError as e:
-            db_open = 1
-
-        if db_open == 2:
-            db_open = "false"
-        else:
-            db_open = "true"
 
         copyPrecedence_xml = '''                                        
         <copyPrecedence>
@@ -3417,20 +3378,19 @@ class CV_Backupset(CV_Client):
                         <isDeviceTypeSelected>false</isDeviceTypeSelected>
                         <logTarget></logTarget>
                         <logTime>
-                          <fromTimeValue>{restoreTime}</fromTimeValue>
                           <toTimeValue>{restoreTime}</toTimeValue>
                         </logTime>
                         <maxOpenFiles>0</maxOpenFiles>
                         <mountDatabase>false</mountDatabase>
                         <noCatalog>true</noCatalog>
-                        <openDatabase>{db_open}</openDatabase>
+                        <openDatabase>true</openDatabase>
                         <osID>2</osID>
                         <partialRestore>false</partialRestore>
                         <racDataStreamAllcation>1 0</racDataStreamAllcation>
                         <racDataStreamAllcation>2 0</racDataStreamAllcation>
                         <recover>true</recover>
                         <recoverFrom>4</recoverFrom>
-                        <recoverSCN>{curSCN}</recoverSCN>
+                        <recoverSCN></recoverSCN>
                         <recoverTime>
                           <timeValue>{restoreTime}</timeValue>
                         </recoverTime>
@@ -3495,8 +3455,7 @@ class CV_Backupset(CV_Client):
               </taskInfo>
             </TMMsg_CreateTaskReq>'''.format(sourceClient=sourceClient, destClient=destClient, instance=instance,
                                              restoreTime="{0:%Y-%m-%d %H:%M:%S}".format(datetime.datetime.now()),
-                                             copyPrecedence_xml=copyPrecedence_xml, data_path_xml=data_path_xml,
-                                             curSCN=curSCN, db_open=db_open)
+                                             copyPrecedence_xml=copyPrecedence_xml, data_path_xml=data_path_xml)
         if restoreTime:
             restoreoracleRacXML = """
             <TMMsg_CreateTaskReq>
@@ -3622,13 +3581,12 @@ class CV_Backupset(CV_Client):
                         <isDeviceTypeSelected>false</isDeviceTypeSelected>
                         <logTarget></logTarget>
                         <logTime>
-                          <fromTimeValue>{restoreTime}</fromTimeValue>
                           <toTimeValue>{restoreTime}</toTimeValue>
                         </logTime>
                         <maxOpenFiles>0</maxOpenFiles>
                         <mountDatabase>false</mountDatabase>
                         <noCatalog>true</noCatalog>
-                        <openDatabase>{db_open}</openDatabase>
+                        <openDatabase>true</openDatabase>
                         <osID>2</osID>
                         <partialRestore>false</partialRestore>
                         <racDataStreamAllcation>1 0</racDataStreamAllcation>
@@ -3701,9 +3659,7 @@ class CV_Backupset(CV_Client):
                 </task>
               </taskInfo>
             </TMMsg_CreateTaskReq>""".format(sourceClient=sourceClient, destClient=destClient, instance=instance,
-                                             restoreTime=restoreTime,
-                                             copyPrecedence_xml=copyPrecedence_xml, data_path_xml=data_path_xml,
-                                             db_open=db_open)
+                                             restoreTime=restoreTime, copyPrecedence_xml=copyPrecedence_xml, data_path_xml=data_path_xml)
 
         try:
             root = ET.fromstring(restoreoracleRacXML)
@@ -3920,265 +3876,6 @@ class CV_Backupset(CV_Client):
                     node.append(toTimeValue)
         except:
             self.msg = "the file format is wrong"
-            return jobId
-
-        xmlString = ""
-        xmlString = ET.tostring(root, encoding='utf-8', method='xml')
-        if self.qCmd("QCommand/qoperation execute", xmlString):
-            try:
-                root = ET.fromstring(self.receiveText)
-            except:
-                self.msg = "unknown error" + self.receiveText
-                return jobId
-
-            nodes = root.findall(".//jobIds")
-            for node in nodes:
-                self.msg = "jobId is: " + node.attrib["val"]
-                jobId = int(node.attrib["val"])
-                return jobId
-            self.msg = "unknown error:" + self.receiveText
-        return jobId
-
-    def restoreActiveDirectoryBackupset(self, dest, operator):
-        # param client is clientName or clientId
-        # operator is {"instanceName":, "destClient":, "restoreTime":, "browseJobId":None}
-        # return JobId
-        # or -1 is error
-        jobId = -1
-        instance = self.backupsetInfo["instanceName"]
-        if operator != None:
-            keys = operator.keys()
-            if "restoreTime" not in keys:
-                self.msg = "operator - no restoreTime"
-                return jobId
-        else:
-            self.msg = "param not set"
-            return jobId
-
-        destClient = dest
-        restoreTime = operator["restoreTime"]
-
-        restoreactivedirectoryXML = '''
-            <TMMsg_CreateTaskReq>
-              <processinginstructioninfo/>
-              <taskInfo>
-                <task>
-                  <taskFlags>
-                    <disabled>false</disabled>
-                  </taskFlags>
-                  <policyType>DATA_PROTECTION</policyType>
-                  <taskType>IMMEDIATE</taskType>
-                  <initiatedFrom>COMMANDLINE</initiatedFrom>
-                </task>
-                <associations>
-                  <subclientName></subclientName>
-                  <backupsetName>{backupsetName}</backupsetName>
-                  <instanceName>{instanceName}</instanceName>
-                  <appName>Active Directory</appName>
-                  <clientName>{clientName}</clientName>
-                </associations>
-                <subTasks>
-                  <subTask>
-                    <subTaskType>RESTORE</subTaskType>
-                    <operationType>RESTORE</operationType>
-                  </subTask>
-                  <options>
-                    <restoreOptions>
-                      <browseOption>
-                        <commCellId>2</commCellId>
-                        <backupset>
-                          <backupsetName>{backupsetName}</backupsetName>
-                          <clientName>{clientName}</clientName>
-                        </backupset>
-                        <timeRange/>
-                        <noImage>false</noImage>
-                        <useExactIndex>false</useExactIndex>
-                        <mediaOption>
-                          <library/>
-                          <mediaAgent/>
-                          <drivePool/>
-                          <copyPrecedence>
-                            <copyPrecedenceApplicable>false</copyPrecedenceApplicable>
-                          </copyPrecedence>
-                          <useISCSIMount>false</useISCSIMount>
-                        </mediaOption>
-                        <timeZone>
-                          <TimeZoneName>(UTC+08:00)&#x5317;&#x4eAC;&#xFF0C;&#x91CD;&#x5e86;&#xFF0C;&#x9999;&#x6e2F;&#x7279;&#x522B;&#x884C;&#x653F;&#x533A;&#xFF0C;&#x4e4C;&#x9C81;&#x6728;&#x9F50;</TimeZoneName>
-                        </timeZone>
-                        <listMedia>false</listMedia>
-                      </browseOption>
-                      <destination>
-                        <destClient>
-                          <clientName>{destClient}</clientName>
-                        </destClient>
-                        <inPlace>true</inPlace>
-                        <isLegalHold>false</isLegalHold>
-                        <noOfStreams>0</noOfStreams>
-                      </destination>
-                      <sharePointRstOption>
-                        <is90OrUpgradedClient>false</is90OrUpgradedClient>
-                      </sharePointRstOption>
-                      <sharePointDocRstOption>
-                        <isOnPremiseMigration>false</isOnPremiseMigration>
-                      </sharePointDocRstOption>
-                      <volumeRstOption>
-                        <volumeLeveRestore>false</volumeLeveRestore>
-                      </volumeRstOption>
-                      <virtualServerRstOption>
-                        <viewType>DEFAULT</viewType>
-                        <isBlockLevelReplication>false</isBlockLevelReplication>
-                      </virtualServerRstOption>
-                      <fileOption>
-                        <sourceItem>,</sourceItem>
-                        <browseFilters>&lt;?xml version='1.0' encoding='UTF-8'?&gt;&lt;databrowse_Query type="0" queryId="0"&gt;&lt;dataParam&gt;&lt;paging firstNode="0" pageSize="1000" skipNode="0" /&gt;&lt;/dataParam&gt;&lt;/databrowse_Query&gt;</browseFilters>
-                      </fileOption>
-                      <commonOptions>
-                        <detectRegularExpression>true</detectRegularExpression>
-                        <wildCard>false</wildCard>
-                        <unconditionalOverwrite>false</unconditionalOverwrite>
-                        <stripLevelType>PRESERVE_LEVEL</stripLevelType>
-                        <preserveLevel>1</preserveLevel>
-                        <stripLevel>0</stripLevel>
-                        <restoreACLs>true</restoreACLs>
-                        <powerRestore>false</powerRestore>
-                        <systemStateBackup>false</systemStateBackup>
-                        <onePassRestore>false</onePassRestore>
-                        <offlineMiningRestore>false</offlineMiningRestore>
-                        <clusterDBBackedup>false</clusterDBBackedup>
-                        <restoreToDisk>false</restoreToDisk>
-                        <syncRestore>false</syncRestore>
-                        <copyToObjectStore>false</copyToObjectStore>
-                      </commonOptions>
-                      <distributedAppsRestoreOptions>
-                        <isMultiNodeRestore>false</isMultiNodeRestore>
-                      </distributedAppsRestoreOptions>
-                    </restoreOptions>
-                    <adminOpts>
-                      <contentIndexingOption>
-                        <subClientBasedAnalytics>false</subClientBasedAnalytics>
-                      </contentIndexingOption>
-                    </adminOpts>
-                  </options>
-                  <subTaskOperation>OVERWRITE</subTaskOperation>
-                </subTasks>
-              </taskInfo>
-            
-            </TMMsg_CreateTaskReq>'''.format(backupsetName=self.backupsetInfo["backupsetName"], instanceName=self.backupsetInfo["instanceName"], clientName=self.backupsetInfo["clientName"], destClient=destClient)
-        if restoreTime:
-            restoreactivedirectoryXML = '''
-            <TMMsg_CreateTaskReq>
-              <processinginstructioninfo/>
-              <taskInfo>
-                <task>
-                  <taskFlags>
-                    <disabled>false</disabled>
-                  </taskFlags>
-                  <policyType>DATA_PROTECTION</policyType>
-                  <taskType>IMMEDIATE</taskType>
-                  <initiatedFrom>COMMANDLINE</initiatedFrom>
-                </task>
-                <associations>
-                  <subclientName></subclientName>
-                  <backupsetName>{backupsetName}</backupsetName>
-                  <instanceName>{instanceName}</instanceName>
-                  <appName>Active Directory</appName>
-                  <clientName>{clientName}</clientName>
-                </associations>
-                <subTasks>
-                  <subTask>
-                    <subTaskType>RESTORE</subTaskType>
-                    <operationType>RESTORE</operationType>
-                  </subTask>
-                  <options>
-                    <restoreOptions>
-                      <browseOption>
-                        <commCellId>2</commCellId>
-                        <backupset>
-                          <backupsetName>{backupsetName}</backupsetName>
-                          <clientName>{clientName}</clientName>
-                        </backupset>
-                        <timeRange>
-                          <toTimeValue>{restoreTime}</toTimeValue>
-                        </timeRange>
-                        <noImage>false</noImage>
-                        <useExactIndex>false</useExactIndex>
-                        <mediaOption>
-                          <library/>
-                          <mediaAgent/>
-                          <drivePool/>
-                          <copyPrecedence>
-                            <copyPrecedenceApplicable>false</copyPrecedenceApplicable>
-                          </copyPrecedence>
-                          <useISCSIMount>false</useISCSIMount>
-                        </mediaOption>
-                        <timeZone>
-                          <TimeZoneName>(UTC+08:00)&#x5317;&#x4eAC;&#xFF0C;&#x91CD;&#x5e86;&#xFF0C;&#x9999;&#x6e2F;&#x7279;&#x522B;&#x884C;&#x653F;&#x533A;&#xFF0C;&#x4e4C;&#x9C81;&#x6728;&#x9F50;</TimeZoneName>
-                        </timeZone>
-                        <listMedia>false</listMedia>
-                      </browseOption>
-                      <destination>
-                        <destClient>
-                          <clientName>{destClient}</clientName>
-                        </destClient>
-                        <inPlace>true</inPlace>
-                        <isLegalHold>false</isLegalHold>
-                        <noOfStreams>0</noOfStreams>
-                      </destination>
-                      <sharePointRstOption>
-                        <is90OrUpgradedClient>false</is90OrUpgradedClient>
-                      </sharePointRstOption>
-                      <sharePointDocRstOption>
-                        <isOnPremiseMigration>false</isOnPremiseMigration>
-                      </sharePointDocRstOption>
-                      <volumeRstOption>
-                        <volumeLeveRestore>false</volumeLeveRestore>
-                      </volumeRstOption>
-                      <virtualServerRstOption>
-                        <viewType>DEFAULT</viewType>
-                        <isBlockLevelReplication>false</isBlockLevelReplication>
-                      </virtualServerRstOption>
-                      <fileOption>
-                        <sourceItem>,</sourceItem>
-                        <browseFilters>&lt;?xml version='1.0' encoding='UTF-8'?&gt;&lt;databrowse_Query type="0" queryId="0"&gt;&lt;dataParam&gt;&lt;paging firstNode="0" pageSize="1000" skipNode="0" /&gt;&lt;/dataParam&gt;&lt;/databrowse_Query&gt;</browseFilters>
-                      </fileOption>
-                      <commonOptions>
-                        <detectRegularExpression>true</detectRegularExpression>
-                        <wildCard>false</wildCard>
-                        <unconditionalOverwrite>false</unconditionalOverwrite>
-                        <stripLevelType>PRESERVE_LEVEL</stripLevelType>
-                        <preserveLevel>1</preserveLevel>
-                        <stripLevel>0</stripLevel>
-                        <restoreACLs>true</restoreACLs>
-                        <powerRestore>false</powerRestore>
-                        <systemStateBackup>false</systemStateBackup>
-                        <onePassRestore>false</onePassRestore>
-                        <offlineMiningRestore>false</offlineMiningRestore>
-                        <clusterDBBackedup>false</clusterDBBackedup>
-                        <restoreToDisk>false</restoreToDisk>
-                        <syncRestore>false</syncRestore>
-                        <copyToObjectStore>false</copyToObjectStore>
-                      </commonOptions>
-                      <distributedAppsRestoreOptions>
-                        <isMultiNodeRestore>false</isMultiNodeRestore>
-                      </distributedAppsRestoreOptions>
-                    </restoreOptions>
-                    <adminOpts>
-                      <contentIndexingOption>
-                        <subClientBasedAnalytics>false</subClientBasedAnalytics>
-                      </contentIndexingOption>
-                    </adminOpts>
-                  </options>
-                  <subTaskOperation>OVERWRITE</subTaskOperation>
-                </subTasks>
-              </taskInfo>
-            
-            </TMMsg_CreateTaskReq>
-            '''.format(backupsetName=self.backupsetInfo["backupsetName"], instanceName=self.backupsetInfo["instanceName"], clientName=self.backupsetInfo["clientName"],  destClient=destClient, restoreTime=restoreTime)
-
-        try:
-            root = ET.fromstring(restoreactivedirectoryXML)
-        except:
-            self.msg = "Error:parse xml: " + restoreactivedirectoryXML
             return jobId
 
         xmlString = ""
@@ -4430,26 +4127,7 @@ class CV_API(object):
         self.msg = sourceBackupset.msg
         return jobId
 
-    def restoreActiveDirectoryBackupset(self, source, dest, backupset=None, operator=None):
-        # operator is {"vmGUID":"" , "vmName":"" , "vsaBrowseProxy":"", "vsaRestoreProxy":"",
-        #              "vCenterHost", "DCName", "esxHost", "datastore", "newVMName":"abc", "diskOption":"Auto/Thin/thick",
-        #              "Power":True/False, "overWrite":True/False}
-        # return JobId
-        # or -1 is error
-
-        sourceBackupset = CV_Backupset(
-            self.token, source, "Active Directory", backupset)
-        destBackupset = CV_Backupset(self.token, dest, "Active Directory")
-        if sourceBackupset.getIsNewBackupset() == True:
-            self.msg = "there is not this Active Directory Client " + source
-            return False
-        if destBackupset.getIsNewBackupset() == True:
-            self.msg = "there is not this Active Directory Client " + dest
-            return False
-        jobId = sourceBackupset.restoreActiveDirectoryBackupset(dest, operator)
-        self.msg = sourceBackupset.msg
-        return jobId
-
+        return -1
 
     def getJobList(self, client, agentType=None, backupset=None, type="backup"):
         # param client is clientName or clientId or None is all client
@@ -4550,16 +4228,16 @@ if __name__ == "__main__":
     # commvault-10
     # info = {"webaddr": "192.168.1.121", "port": "81", "username": "admin", "passwd": "admin", "token": "",
     #         "lastlogin": 0}
-    info = {"webaddr": "192.168.100.149", "port": "81", "username": "sa_cloud", "passwd": "1qaz@WSX", "token": "",
+    info = {"webaddr": "10.1.5.160", "port": "81", "username": "sa_cloud", "passwd": "1qaz@WSX", "token": "",
             "lastlogin": 0}
     # info = {"webaddr": "cv-server", "port": "81", "username": "cvadmin", "passwd": "1qaz@WSX", "token": "",
     #         "lastlogin": 0}
     cvToken = CV_RestApi_Token()
 
     cvToken.login(info)
-    cvAPI = CV_API(cvToken)
+    cvAPI = CV_Client(cvToken)
 
-    ret = cvAPI.restoreActiveDirectoryBackupset("exchangeads", "exchangeads", operator={'restoreTime': ''})  # backup status
+    ret = cvAPI.getClient("10.64.7.43")  # backup status
     # ret = cvAPI.getClientInfo(3)
     # ret = cvAPI.getClientList()
 
